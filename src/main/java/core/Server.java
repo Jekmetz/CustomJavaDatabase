@@ -17,9 +17,9 @@ import java.util.LinkedList;
 public class Server {
 	@SuppressWarnings("unused")
 	private static final String
-		STUDENT_NAME  = "Your Name",
-		STUDENT_IDNUM = "000000000",
-		STUDENT_EMAIL = "email@mix.wvu.edu";
+		STUDENT_NAME  = "Jay Kmetz",
+		STUDENT_IDNUM = "800249366",
+		STUDENT_EMAIL = "jek0025@mix.wvu.edu";
 	
 	private Database database;
 	private List<Driver> drivers;
