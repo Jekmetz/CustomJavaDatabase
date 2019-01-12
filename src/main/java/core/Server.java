@@ -48,7 +48,7 @@ public class Server {
 		 * one or more semicolon-delimited queries in
 		 * the script to be split and parsed distinctly.
 		 */
-		String[] queries = {script};
+		String[] queries = {script.split(";")};
 		
 		/* TODO: This only checks the first driver for a
 		 * response to the first query. Instead, iterate over
