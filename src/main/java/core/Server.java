@@ -42,14 +42,8 @@ public class Server {
 	}
 	
 	public List<Response> interpret(String script) {
-		/*
-		 * TODO: This wrongly assumes the entire script
-		 * is a single query. However, there may be
-		 * one or more semicolon-delimited queries in
-		 * the script to be split and parsed distinctly.
-		 */
-		String[] queries = {script.split(";")};
-		
+
+		String[] queries = script.split(";");			//Separate queries into an array
 		/* TODO: This only checks the first driver for a
 		 * response to the first query. Instead, iterate over
 		 * all drivers until one of them gives a response
@@ -58,13 +52,28 @@ public class Server {
 		 * Then iterate again for the next query. Don't
 		 * forget to pass a reference to the actual database.
 		 */
-		List<Response> responses = new LinkedList<Response>();
-		Response response = drivers.get(0).execute(null, queries[0]);
-		if (response != null)
-			responses.add(response);
-		else 
-			responses.add(new Response(false, "Unrecognized query", null));
+		List<Response> responses = new LinkedList<Response>();	//Initialize responses
 		
-		return responses;
+		{
+			Response response;	//batton the hatches
+			boolean found;		//ready the port bow
+			for(String query : queries)				//for every query in queries...
+			{
+				found = false;					//init found to be false
+				for(Driver driver : drivers)			//for every driver in drivers...
+				{
+					response = driver.execute(null, query);	//execute that query through the driver
+				        if (response != null)			//if response...
+					{
+						responses.add(response);	//add it
+						found = true;			//ITS BEEN FOUND... HUZZAH!
+					}	
+				}
+				if(!found)					//if not found...
+					responses.add(new Response(false, "Unrecognized query",null));	//show that.
+			}
+		}
+		
+		return responses;	//Give the people what they want
 	}
 }

@@ -46,9 +46,13 @@ public class Console {
 		 * may be one or more responses, and each response
 		 * should be reported in the order listed.
 		 */
-		out.println("Success: " + responses.get(0).get("success"));
-		out.println("Message: " + responses.get(0).get("message"));
-		out.println("Table:   " + responses.get(0).get("table"));
+
+		for(Response response : responses)
+		{
+			out.println("Success: " + response.get("success"));
+			out.println("Message: " + response.get("message"));
+			out.println("Table:   " + response.get("table"));
+		}
 
 		// TODO: Support tabular view, in a later module.
 	}
