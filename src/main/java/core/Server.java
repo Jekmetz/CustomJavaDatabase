@@ -34,7 +34,7 @@ public class Server {
 		// TODO: Add each new driver as it is implemented.
 		drivers = new LinkedList<Driver>();
 		drivers.add(new DEcho());
-		// drivers.add(new DRange());
+		//drivers.add(new DRange());
 	}
 	
 	public Database database() {
@@ -70,7 +70,7 @@ public class Server {
 					}	
 				}
 				if(!found)					//if not found...
-					responses.add(new Response(false, "Unrecognized query",null));	//show that.
+					responses.add(new Response(false, "Unrecognized query: " + query,null));	//show that.
 			}
 		}
 		

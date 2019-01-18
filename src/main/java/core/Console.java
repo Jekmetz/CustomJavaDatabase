@@ -24,36 +24,39 @@ public class Console {
 	}
 	
 	public static void prompt (Server server, InputStream in_stream, OutputStream out_stream) {
+		//Initialize Varibles
+			//Print Stream
 		final Scanner in = new Scanner(in_stream);
 		final PrintStream out = new PrintStream(out_stream);
+			//REP Loop Vars
+		boolean stay = true;
+		String command = null;
+			//Functional
+		List<Response> responses = null;
 		
-		/*
-		 * TODO: Use a REPL to prompt the user for inputs,
-		 * and send each input to the server for parsing.
-		 * No inputs are to be parsed in the console, except
-		 * for the case-insensitive sentinel EXIT, which
-		 * terminates the console.
-		*/
-		out.print(">> ");
-		String text = in.nextLine();
-		in.close();
-		
-		List<Response> responses = server.interpret(text);
-		
-		/*
-		 * TODO: This wrongly assumes that there is only
-		 * one response from the server. However, there 
-		 * may be one or more responses, and each response
-		 * should be reported in the order listed.
-		 */
-
-		for(Response response : responses)
+		while(stay)
 		{
-			out.println("Success: " + response.get("success"));
-			out.println("Message: " + response.get("message"));
-			out.println("Table:   " + response.get("table"));
+			out.print(">> ");		//prompt for command
+			command = in.nextLine();	//read command
+
+			if(command.toLowerCase().equals("exit"))		//if they want to exit...
+				stay = false;				//kill it
+			else
+				responses = server.interpret(command);	//Otherwise, interperet command
+			
+			
+			for(Response response : responses)	//for each response...
+			{
+				//Print it out
+				out.println("Success: " + response.get("success"));
+				out.println("Message: " + response.get("message"));
+				out.println("Table:   " + response.get("table"));
+			}
+
+			
+			// TODO: Support tabular view, in a later module.
 		}
 
-		// TODO: Support tabular view, in a later module.
+		in.close();
 	}
 }
