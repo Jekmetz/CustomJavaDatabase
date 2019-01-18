@@ -64,7 +64,7 @@ class Lab1 {
 		
 		final double rate = passed_tests / (double) total_tests
 		System.out.println(
-			'[P1 PASSED ' + Math.round(rate * 100) + '% OF UNIT TESTS]',
+			'[L1 PASSED ' + Math.round(rate * 100) + '% OF UNIT TESTS]',
 		)
 	}
 }

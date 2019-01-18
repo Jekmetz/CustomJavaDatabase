@@ -146,7 +146,7 @@ class Lab2 {
 	static void report() {
 		final double rate = passed_queries / (double) total_queries
 		System.out.println(
-			'[P2 PASSED ' + Math.round(rate * 100) + '% OF UNIT TESTS]',
+			'[L2 PASSED ' + Math.round(rate * 100) + '% OF UNIT TESTS]',
 		)
 	}
 	
