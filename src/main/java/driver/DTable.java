@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import adt.Database;
 import adt.Response;
+import adt.Row;
 import adt.Table;
 
 public class DTable implements Driver {
@@ -36,7 +37,7 @@ public class DTable implements Driver {
 			@SuppressWarnings("unused")
 			String test = null; //Used to test if groups exist
 			Pattern subpattern = Pattern.compile(
-				"\\s*(?<primary>PRIMARY)?\\s+(?<type>(?:STRING|BOOLEAN|INTEGER))\\s+(?<name>[a-zA-Z][a-zA-Z0-9]*)",
+				"\\s*(?<primary>PRIMARY(?:\\s+))?(?<type>(?:STRING|BOOLEAN|INTEGER))\\s+(?<name>[a-zA-Z][a-zA-Z0-9]*)",
 				Pattern.CASE_INSENSITIVE		
 			);
 			Matcher submatcher;
@@ -47,6 +48,7 @@ public class DTable implements Driver {
 			
 			{
 				int i = 0;
+				Row row = null;
 				for(String arg : args)
 				{	
 					submatcher = subpattern.matcher(arg);
@@ -58,13 +60,18 @@ public class DTable implements Driver {
 						try 
 						{
 							test = submatcher.group("primary");
-							table.getSchema().put("primary_index",i);
+							table.getSchema().put("primary_name",submatcher.group("name"));
+							table.getSchema().put("primary_type", submatcher.group("type"));
 							primaryFound = true;
 						} catch (IllegalArgumentException e) { /*Just skip that stuff*/}
 					}
 					
 					types.add(submatcher.group("type"));
 					names.add(submatcher.group("name"));
+					
+					row = new Row();
+					table.put(submatcher.group("name"), row);
+					
 					i++;
 				}
 			}
