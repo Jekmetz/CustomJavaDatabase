@@ -42,15 +42,18 @@ public class Console {
 			if(command.toLowerCase().equals("exit"))		//if they want to exit...
 				stay = false;				//kill it
 			else
-				responses = server.interpret(command);	//Otherwise, interperet command
-			
-			
-			for(Response response : responses)	//for each response...
 			{
-				//Print it out
-				out.println("Success: " + response.get("success"));
-				out.println("Message: " + response.get("message"));
-				out.println("Table:   " + response.get("table"));
+				responses = server.interpret(command);	//Otherwise, interpret command
+			
+			
+				for(Response response : responses)	//for each response...
+				{
+					//Print it out
+					out.println("Success: " + response.get("success"));
+					out.println("Message: " + response.get("message"));
+					out.println("Table:   " + response.get("table"));
+					out.println();
+				}
 			}
 
 			

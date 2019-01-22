@@ -53,11 +53,11 @@ public class DRange implements Driver {
 		
 		table.getSchema().put("table_name", null);
 		
-		List<String> names = new ArrayList<>();
+		List<String> names = new ArrayList<String>();
 		names.add(name);
 		table.getSchema().put("column_names", names);
 		
-		List<String> types = new ArrayList<>();
+		List<String> types = new ArrayList<String>();
 		types.add("integer");
 		table.getSchema().put("column_types", types);
 		
