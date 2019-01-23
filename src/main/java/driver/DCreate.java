@@ -45,7 +45,7 @@ public class DCreate implements Driver{
 		List<String> types = new ArrayList<String>();
 		
 		{
-			int i = 0;
+			//int i = 0;
 			Row row = null;
 			for(String arg : args)
 			{	
@@ -70,7 +70,15 @@ public class DCreate implements Driver{
 				row = new Row();
 				table.put(submatcher.group("name"), row);
 				
-				i++;
+				/*TODO: This structure is wrong, I believe. I think
+				 * the rows are not supposed to be named. The rows have one
+				 * of each type based off of the column names. I won't put a 
+				 * row in the table at all yet. Also, I think that the schema
+				 * for primary_name needs to be primary_index and it will be i.
+				 * That is just my premonition. Use it as you will, future J.
+				 */
+				
+				//i++;
 			}
 		}
 		
