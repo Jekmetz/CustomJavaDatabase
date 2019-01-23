@@ -33,9 +33,12 @@ public class Server {
 		// TODO: Add each new driver as it is implemented.
 		drivers = new LinkedList<Driver>();
 		drivers.add(new DEcho());
-		drivers.add(new DTable());
+		drivers.add(new DCreate());
+		drivers.add(new DDrop());
+		drivers.add(new DShow());
 		drivers.add(new DSquares());
 		// drivers.add(new DRange());
+		// drivers.add(new DTable());
 	}
 
 	public Database database() {
