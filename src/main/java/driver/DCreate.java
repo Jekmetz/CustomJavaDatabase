@@ -55,13 +55,12 @@ public class DCreate implements Driver{
 
 				if(!primaryFound)
 				{
-					try 
+					if(submatcher.group("primary") != null) 
 					{
-						test = submatcher.group("primary");
 						table.getSchema().put("primary_name",submatcher.group("name"));
 						table.getSchema().put("primary_type", submatcher.group("type"));
 						primaryFound = true;
-					} catch (IllegalArgumentException e) { /*Just skip that stuff*/}
+					}
 				}
 				
 				types.add(submatcher.group("type"));
@@ -89,6 +88,14 @@ public class DCreate implements Driver{
 		//RETURN VALUES
 		//table = null;
 		message = "Table successfully created!";
+		
+		if(!primaryFound)
+		{
+			message = "Primary column necessary but not included";
+			table = null;
+			
+			return new Response(false,message,table);
+		}
 		
 		return new Response(true,message,table);
 	}
