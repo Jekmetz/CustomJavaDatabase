@@ -37,15 +37,17 @@ public class DSquares implements Driver{
 		
 		if(!matcher.matches()) return null;	//If it didn't match the whole query, return null
 
-		upper = Integer.parseInt(matcher.group("upper"));
-		baseName = (matcher.group("baseName") == null) ? "x" : matcher.group("baseName");
-		squareName = (matcher.group("squareName") == null) ? baseName + "_squared" : matcher.group("squareName");
+		upper = Integer.parseInt(matcher.group("upper"));															//Get upper value
+		baseName = (matcher.group("baseName") == null) ? "x" : matcher.group("baseName");							//set basename (default to "x")
+		squareName = (matcher.group("squareName") == null) ? baseName + "_squared" : matcher.group("squareName");	//set squarename (default to "x_squared")
 
 		if(baseName.equals(squareName)) return null; 	//don't allow the square and basename to be the same
 		
+		//Add basename
 		names.add(baseName);
 		types.add("integer");
 		
+		//Add squareName
 		names.add(squareName);
 		types.add("integer");
 		
@@ -54,14 +56,14 @@ public class DSquares implements Driver{
 		table.getSchema().put("column_types", types);
 		table.getSchema().put("primary_index", 0);
 		
-		for(int i = 0; i*i < upper; i++)
+		for(int i = 0; i*i < upper; i++)	//for all the squares under upper...
 		{
-			row = new Row();
-			row.add(i);
-			row.add(i*i);
-			table.put(i, row);
+			row = new Row();				//create a new row,
+			row.add(i);						//populate it with the base
+			row.add(i*i);					//populate it with the base*base
+			table.put(i, row);				//put it in the table with the row name, i
 		}
 		
-		return new Response(true,message,table);
+		return new Response(true,message,table);	//send it back
     }
 }
