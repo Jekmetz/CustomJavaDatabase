@@ -34,6 +34,7 @@ public class Server {
 		drivers = new LinkedList<Driver>();
 		drivers.add(new DEcho());
 		drivers.add(new DTable());
+		drivers.add(new DSquares());
 		// drivers.add(new DRange());
 	}
 

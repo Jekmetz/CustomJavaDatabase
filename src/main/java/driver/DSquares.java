@@ -14,7 +14,7 @@ public class DSquares implements Driver{
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-			"\\s*SQUARES\\s+BELOW\\s+(?<upper>[0-9]+)(?:\\s+AS\\s+(?<baseName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\,\\s*(?<squareName>[a-zA-Z][a-zA-Z0-9_]*))?)?\\s*",
+			"SQUARES\\s+BELOW\\s+(?<upper>[0-9]+)(?:\\s+AS\\s+(?<baseName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\,\\s*(?<squareName>[a-zA-Z][a-zA-Z0-9_]*))?)?",
 			Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -33,36 +33,33 @@ public class DSquares implements Driver{
 		List<String> types = new ArrayList<String>();
 		String baseName = null;
 		String squareName = null;
+		Row row = null;
 		
 		if(!matcher.matches()) return null;	//If it didn't match the whole query, return null
+
+		upper = Integer.parseInt(matcher.group("upper"));
+		baseName = (matcher.group("baseName") == null) ? "x" : matcher.group("baseName");
+		squareName = (matcher.group("squareName") == null) ? baseName + "_squared" : matcher.group("squareName");
+
+		if(baseName.equals(squareName)) return null; 	//don't allow the square and basename to be the same
 		
-		upper = (int)Math.sqrt(Integer.parseInt(matcher.group("upper")));
-		baseName = matcher.group("baseName");
-		squareName = (matcher.group("squareName") == null) ? "x" : matcher.group("squareName");
+		names.add(baseName);
+		types.add("integer");
 		
 		names.add(squareName);
 		types.add("integer");
-		
-		if(baseName != null) 
-		{
-			names.add(baseName);
-			types.add("integer");
-			Row bases = new Row();
-		}
-		Row squares = new Row();
 		
 		table.getSchema().put("table_name", null);
 		table.getSchema().put("column_names",names);
 		table.getSchema().put("column_types", types);
 		table.getSchema().put("primary_index", 0);
 		
-		for(int i = 0; i < upper; i++)
+		for(int i = 0; i*i < upper; i++)
 		{
-
-			if(baseName != null)
-			{
-				
-			}
+			row = new Row();
+			row.add(i);
+			row.add(i*i);
+			table.put(i, row);
 		}
 		
 		return new Response(true,message,table);
