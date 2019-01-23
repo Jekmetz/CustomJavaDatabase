@@ -37,19 +37,19 @@ public class DSquares implements Driver{
 		if(!matcher.matches()) return null;	//If it didn't match the whole query, return null
 		
 		upper = (int)Math.sqrt(Integer.parseInt(matcher.group("upper")));
-		baseName = (matcher.group("baseName") == null) ? "x" : matcher.group("baseName");
-		squareName = matcher.group("baseName");
+		baseName = matcher.group("baseName");
+		squareName = (matcher.group("squareName") == null) ? "x" : matcher.group("squareName");
 		
-		names.add(baseName);
+		names.add(squareName);
 		types.add("integer");
 		
-		if(squareName != null) 
+		if(baseName != null) 
 		{
-			names.add(squareName);
+			names.add(baseName);
 			types.add("integer");
-			Row squares = new Row();
+			Row bases = new Row();
 		}
-		Row bases = new Row();
+		Row squares = new Row();
 		
 		table.getSchema().put("table_name", null);
 		table.getSchema().put("column_names",names);
@@ -59,7 +59,7 @@ public class DSquares implements Driver{
 		for(int i = 0; i < upper; i++)
 		{
 
-			if(squareName != null)
+			if(baseName != null)
 			{
 				
 			}
