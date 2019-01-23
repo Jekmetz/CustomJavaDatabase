@@ -79,11 +79,7 @@ public class DTable implements Driver {
 			table.getSchema().put("table_name",matcher.group("tabNameC"));
 			table.getSchema().put("column_names",names);
 			table.getSchema().put("column_types",types);
-			
-			/*
-			 * TODO: Make sure to actually put stuff in the table
-			 */
-			
+					
 			//RETURN VALUES
 			//table = null;
 			message = "Table successfully created!";
