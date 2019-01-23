@@ -15,7 +15,7 @@ public class DTable implements Driver {
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-			"^((?<create>CREATE\\s+TABLE\\s+(?<tabNameC>[a-zA-Z][a-zA-Z0-9]*)\\s*\\((?<inside>[a-zA-Z0-9\\,\\s]+)\\)(?:\\s*))|(?<show>SHOW\\s+TABLES(?:\\s*))|(?<drop>DROP\\s+TABLE\\s+(?<tabNameD>[a-zA-Z][a-zA-Z0-9]*)(?:\\s*))){1}$",
+			"^((?<create>CREATE\\s+TABLE\\s+(?<tabNameC>[a-zA-Z][a-zA-Z0-9_]*)\\s*\\((?<inside>[a-zA-Z0-9_\\,\\s]+)\\)(?:\\s*))|(?<show>SHOW\\s+TABLES(?:\\s*))|(?<drop>DROP\\s+TABLE\\s+(?<tabNameD>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*))){1}$",
 			Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -37,7 +37,7 @@ public class DTable implements Driver {
 			@SuppressWarnings("unused")
 			String test = null; //Used to test if groups exist
 			Pattern subpattern = Pattern.compile(
-				"\\s*(?<primary>PRIMARY(?:\\s+))?(?<type>(?:STRING|BOOLEAN|INTEGER))\\s+(?<name>[a-zA-Z][a-zA-Z0-9]*)",
+				"\\s*(?<primary>PRIMARY(?:\\s+))?(?<type>(?:STRING|BOOLEAN|INTEGER))\\s+(?<name>[a-zA-Z][a-zA-Z0-9_]*)",
 				Pattern.CASE_INSENSITIVE		
 			);
 			Matcher submatcher;
@@ -79,11 +79,7 @@ public class DTable implements Driver {
 			table.getSchema().put("table_name",matcher.group("tabNameC"));
 			table.getSchema().put("column_names",names);
 			table.getSchema().put("column_types",types);
-			
-			/*
-			 * TODO: Make sure to actually put stuff in the table
-			 */
-			
+					
 			//RETURN VALUES
 			//table = null;
 			message = "Table successfully created!";
