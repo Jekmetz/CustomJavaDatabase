@@ -45,8 +45,8 @@ public class DCreate implements Driver{
 		List<String> types = new ArrayList<String>();
 		
 		{
-			//int i = 0;
-			Row row = null;
+			int i = 0;
+			//Row row = null;
 			for(String arg : args)
 			{	
 				submatcher = subpattern.matcher(arg);
@@ -57,7 +57,7 @@ public class DCreate implements Driver{
 				{
 					if(submatcher.group("primary") != null) 
 					{
-						table.getSchema().put("primary_name",submatcher.group("name"));
+						table.getSchema().put("primary_index",i);
 						table.getSchema().put("primary_type", submatcher.group("type"));
 						primaryFound = true;
 					}
@@ -66,18 +66,10 @@ public class DCreate implements Driver{
 				types.add(submatcher.group("type"));
 				names.add(submatcher.group("name"));
 				
-				row = new Row();
-				table.put(submatcher.group("name"), row);
+				//row = new Row();
+				//table.put(submatcher.group("name"), row);
 				
-				/*TODO: This structure is wrong, I believe. I think
-				 * the rows are not supposed to be named. The rows have one
-				 * of each type based off of the column names. I won't put a 
-				 * row in the table at all yet. Also, I think that the schema
-				 * for primary_name needs to be primary_index and it will be i.
-				 * That is just my premonition. Use it as you will, future J.
-				 */
-				
-				//i++;
+				i++;
 			}
 		}
 		

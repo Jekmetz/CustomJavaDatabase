@@ -48,13 +48,7 @@ public class Server {
 	public List<Response> interpret(String script) {
 
 		String[] queries = script.split(";"); // Separate queries into an array
-		/*
-		 * TODO: This only checks the first driver for a response to the first query.
-		 * Instead, iterate over all drivers until one of them gives a response for the
-		 * first query. Default to a failure response only if no driver gave a response
-		 * for a query. Then iterate again for the next query. Don't forget to pass a
-		 * reference to the actual database.
-		 */
+	
 		List<Response> responses = new LinkedList<Response>(); // Initialize responses
 
 		{
