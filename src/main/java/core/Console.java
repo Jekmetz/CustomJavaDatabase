@@ -52,6 +52,7 @@ public class Console {
 					out.println("Success: " + response.get("success"));
 					out.println("Message: " + response.get("message"));
 					out.println("Table:   " + response.get("table"));
+					if(response.get("schema") != null) out.println("Schema:  " + response.get("schema"));
 					out.println();
 				}
 			}

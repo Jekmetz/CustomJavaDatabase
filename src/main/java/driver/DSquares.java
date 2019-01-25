@@ -64,6 +64,7 @@ public class DSquares implements Driver{
 			table.put(i, row);				//put it in the table with the row name, i
 		}
 		
-		return new Response(true,message,table);	//send it back
+		//System.out.println(table.getSchema().toString());
+		return new Response(true,message,table,table.getSchema());	//send it back
     }
 }

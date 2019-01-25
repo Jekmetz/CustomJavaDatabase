@@ -64,7 +64,7 @@ public class DShow implements Driver{
 		}
 		//message = (db.toString().equals("{}")) ? "No Tables to Show!" : db.toString();
 		
-		return new Response(true,table.toString(),null);
+		return new Response(true,table.toString(),null,table.getSchema());
 	}
 
 }

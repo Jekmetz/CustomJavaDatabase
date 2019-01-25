@@ -69,6 +69,6 @@ public class DRange implements Driver {
 			table.put(i, row);
 		}
 		
-		return new Response(true, null, table);
+		return new Response(true, null, table,table.getSchema());
 	}
 }

@@ -27,4 +27,11 @@ public class Response extends HashMap<String, Object> {
     	this.put("message", message);
     	this.put("table", table);
     }
+    
+    public Response(boolean success, String message, Table table, Schema schema) {
+    	this.put("success", success);
+    	this.put("message", message);
+    	this.put("table", table);
+    	this.put("schema", schema);
+    }
 }
