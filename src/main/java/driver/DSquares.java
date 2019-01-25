@@ -18,7 +18,7 @@ public class DSquares implements Driver{
 			Pattern.CASE_INSENSITIVE
 		);
 	}
-
+	
 	@Override
 	public Response execute(Database db, String query)
     {
@@ -27,12 +27,11 @@ public class DSquares implements Driver{
 		Table table = new Table();
 		
 		//Initialize execute vars
-		Matcher matcher = pattern.matcher(query.trim());
+		Matcher matcher = pattern.matcher(query.trim());	
 		int upper = 0;
 		List<String> names = new ArrayList<String>();
 		List<String> types = new ArrayList<String>();
-		String baseName = null;
-		String squareName = null;
+		String baseName = null, squareName = null;
 		Row row = null;
 		
 		if(!matcher.matches()) return null;	//If it didn't match the whole query, return null
