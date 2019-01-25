@@ -58,12 +58,11 @@ public class DCreate implements Driver{
 					if(submatcher.group("primary") != null) 
 					{
 						table.getSchema().put("primary_index",i);
-						table.getSchema().put("primary_type", submatcher.group("type"));
 						primaryFound = true;
 					}
 				}
 				
-				types.add(submatcher.group("type"));
+				types.add(submatcher.group("type").toLowerCase());
 				names.add(submatcher.group("name"));
 				
 				//row = new Row();

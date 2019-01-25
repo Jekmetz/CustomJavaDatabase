@@ -64,8 +64,9 @@ public class Server {
 					{
 						responses.add(response); 	// add it
 						
-						if(response.get("table") != null)
+						if(response.get("table") != null)	//if the response has a table...
 						{
+							//we want to add it to the database
 							database.put(((Table)response.get("table")).getSchema().getString("table_name"),(Table)response.get("table"));
 						}
 						

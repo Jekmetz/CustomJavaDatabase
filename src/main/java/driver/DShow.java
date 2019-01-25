@@ -1,10 +1,14 @@
 package driver;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import adt.Database;
 import adt.Response;
+import adt.Row;
 import adt.Table;
 
 public class DShow implements Driver{
@@ -21,7 +25,7 @@ public class DShow implements Driver{
 	public Response execute(Database db, String query) {
 		//Initialize Return variables
 		Table table = new Table();
-		String message = null;
+		//String message = null;
 		
 		//Init function vars
 		Matcher matcher = pattern.matcher(query.trim());
@@ -30,9 +34,37 @@ public class DShow implements Driver{
 		
 		//RETURN VALUES
 		table = null;
-		message = (db.toString().equals("{}")) ? "No Tables to Show!" : db.toString();
+		Set<String> tabNames = db.keySet();
 		
-		return new Response(true,message,table);
+		{
+			table = new Table();
+			Row row = null;
+			
+			List<String> names = new ArrayList<String>();
+			List<String> types = new ArrayList<String>();
+			
+			names.add("table_name");
+			types.add("string");
+			
+			names.add("row_count");
+			types.add("integer");
+			
+			table.getSchema().put("column_names", names);
+			table.getSchema().put("column_types", types);
+			table.getSchema().put("primary_index", 0);
+			table.getSchema().put("table_name", null);
+			
+			for(String tabName : tabNames)
+			{
+				row = new Row();
+				row.add(tabName);
+				row.add(db.get(tabName).size());
+				table.put(tabName,row);
+			}
+		}
+		//message = (db.toString().equals("{}")) ? "No Tables to Show!" : db.toString();
+		
+		return new Response(true,table.toString(),null);
 	}
 
 }
