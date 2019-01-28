@@ -20,21 +20,34 @@ public class DDrop implements Driver {
 	@Override
 	public Response execute(Database db, String query) {
 		//Initialize Return variables
-		Table table = new Table();
+		Table table = null;
 		String message = null;
+		boolean success = true;
 		
 		//Init function vars
 		Matcher matcher = pattern.matcher(query.trim());
 		
 		if(!matcher.matches()) 	return null; //If it isn't a full match, return null
 		
-		String dMessage = (db.remove(matcher.group("tabName")) == null) ? "The table " + matcher.group("tabName") + " did not exist in the database!" : "Table successfully dropped!";
-		
+		//##DDropJL001##
+		if(db.containsKey(matcher.group("tabName")))
+		{
+			success = true;
+			table = db.get(matcher.group("tabName"));
+			//In creating the message, we remove the table
+			message = "Table Name: " + matcher.group("tabName") + "; Number of rows: " + db.remove(matcher.group("tabName")).size();
+		} else 
+		{
+			success = false;
+			table = null;
+			message = "The table " + matcher.group("tabName") + " did not exist in the database!";
+		}
+
 		//RETURN VALUES
-		table = null;
-		message = dMessage;
+		//table = null;		//table already set by this point (label DDropJL001)
+		//message = null; 	//message already set by this point (label DDropJL001)
 		
-		return new Response(true,message,table);
+		return new Response(success,message,table);
 	}
 
 }
