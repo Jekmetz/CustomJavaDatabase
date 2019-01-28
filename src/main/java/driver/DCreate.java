@@ -22,7 +22,8 @@ public class DCreate implements Driver{
 	
 	
 	@Override
-	public Response execute(Database db, String query) {
+	public Response execute(Database db, String query)
+       	{
 		//Initialize Return variables
 		Table table = new Table();
 		String message = null;
@@ -31,9 +32,6 @@ public class DCreate implements Driver{
 		Matcher matcher = pattern.matcher(query.trim());
 		
 		if(!matcher.matches()) 	return null;	//If it isn't a full match, return null
-		
-		@SuppressWarnings("unused")
-		String test = null; //Used to test if groups exist
 		Pattern subpattern = Pattern.compile(
 			"\\s*(?<primary>PRIMARY(?:\\s+))?(?<type>(?:STRING|BOOLEAN|INTEGER))\\s+(?<name>[a-zA-Z][a-zA-Z0-9_]*)",
 			Pattern.CASE_INSENSITIVE		
