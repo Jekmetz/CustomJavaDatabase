@@ -1,13 +1,10 @@
 package driver;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import adt.Database;
 import adt.Response;
-import adt.Row;
 import adt.Table;
 
 public class DDump implements Driver {
@@ -15,15 +12,16 @@ public class DDump implements Driver {
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-		"",
-		Pattern.CASE_INSENSITIVE
+				//DUMP\s+TABLE\s(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)
+				"DUMP\\s+TABLE\\s(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)",
+				Pattern.CASE_INSENSITIVE
 		);
 	}
 
 	@Override public Response execute(Database db, String query)
 	{
 		//Initialize Return variables
-		Table table = new Table();
+		Table table = null;
 		String message = null;
 		Boolean success = false;
 
@@ -32,6 +30,18 @@ public class DDump implements Driver {
 
 		if(!matcher.matches()) return null;
 		
-		return new Response(success,message,table);
+		if(db.containsKey(matcher.group("tabName")))	//If the table exists
+		{
+			table = db.get(matcher.group("tabName"));
+			message = null;
+			success = true;
+		} else
+		{
+			table = null;
+			message = "The table \"" + matcher.group("tabName") + "\" does not exist in the database";
+			success = false;
+		}
+				
+		return new Response(success,message,table,(table == null) ? null : table.getSchema());
 	}
 }
