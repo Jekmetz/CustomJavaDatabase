@@ -25,10 +25,13 @@ public class DDump implements Driver {
 		//Initialize Return variables
 		Table table = new Table();
 		String message = null;
+		Boolean success = false;
 
 		//Init function vars
 		Matcher matcher = pattern.matcher(query.trim());
 
 		if(!matcher.matches()) return null;
+		
+		return new Response(success,message,table);
 	}
 }
