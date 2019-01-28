@@ -1,7 +1,6 @@
 package driver;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -40,8 +39,8 @@ public class DCreate implements Driver{
 		if(!db.containsKey(matcher.group("tabName")))	//If the table doesn't exist already...
 		{
 			Set<String> colNames = new TreeSet<String>();
-			boolean primaryFound = false;			//primary key found
-			boolean dupePrimary = false, dupeColName = false;	//various checks
+			success = false;		//success is false until a primary is found
+			boolean dupePrimary = false, dupeColName = false, primaryFound = false;	//various checks
 			String[] args = matcher.group("inside").split("\\s*,\\s*");		//split by comma
 			List<String> names = new ArrayList<String>();
 			List<String> types = new ArrayList<String>();
@@ -54,15 +53,14 @@ public class DCreate implements Driver{
 				{	
 					pFound = 0;					//If the primary is found, then the name will be in cD[2] and the type will be cD[1] otherwise... cD[1] and cd[0] respectively
 					colDefs = arg.split("\\s+");
-					
-					System.out.println(Arrays.toString(colDefs));
-					
+									
 					if(colDefs.length == 3)		//If it has three elements (ex: primary boolean colName)
 					{
 						if(!primaryFound)
 						{
 							pFound = 1;
 							primaryFound = true;
+							success = true;
 							table.getSchema().put("primary_index", i);
 						} else
 						{
@@ -74,7 +72,7 @@ public class DCreate implements Driver{
 					if(colNames.add(colDefs[1 + pFound]))	//If there are no dupes...
 					{
 						names.add(colDefs[1 + pFound]);	//Add the name
-						types.add(colDefs[0 + pFound]);	//Add the type
+						types.add(colDefs[0 + pFound].toLowerCase());	//Add the type
 					} else 				//If there are dupes...
 					{
 						dupeColName = true;
@@ -96,25 +94,24 @@ public class DCreate implements Driver{
 				//RETURN VALUES
 				//table = null;	//table is set to what it needs to be already
 				message = "Table Name: " + matcher.group("tabName") + "; Number of Columns: " + names.size();
-				success = true;
+				//success = true; //success already true if here
 				
-				if(!primaryFound)
-				{
-					message = "Primary column necessary but not included!";
-					table = null;
-					success = false;
-				}
 			} else			//If there was a bad spot
 			{
 				/*PRIORITY CHAIN
-				 * tableExists > dupePrimary > dupeColName
+				 * tableExists > dupePrimary > primaryNotFound > dupeColName
 				 */
 				if(dupePrimary) //If there was more than one primary
 				{
 					success = false;
 					message = "Only one primary column can be specified!";
 					table = null;
-				} else if (dupeColName)	//If there was more than one dupe colName
+				} else if (!primaryFound) //If a primary was not found
+				{
+					success = false;
+					message = "Primary column necessary but not included!";
+					table = null;
+				}else if (dupeColName)	//If there was more than one dupe colName
 				{
 					success = false;
 					message = "No duplicate column names allowed!";
