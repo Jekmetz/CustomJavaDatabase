@@ -1,7 +1,5 @@
 package core;
 
-import adt.Table;
-
 import driver.*;
 import adt.Response;
 import adt.Database;
@@ -63,12 +61,6 @@ public class Server {
 					if (response != null) 					// if response...
 					{
 						responses.add(response); 	// add it
-						
-						if(response.get("table") != null)	//if the response has a table...
-						{
-							//we want to add it to the database
-							database.put(((Table)response.get("table")).getSchema().getString("table_name"),(Table)response.get("table"));
-						}
 						
 						found = true; 				// ITS BEEN FOUND... HUZZAH!
 					}
