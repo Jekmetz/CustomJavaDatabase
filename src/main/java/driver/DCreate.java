@@ -16,8 +16,8 @@ public class DCreate implements Driver{
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-			//CREATE\s+TABLE\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\s*\((?<inside>\s*(?:PRIMARY\s+)?(?:(STRING|BOOLEAN|INTEGER))\s+(?:[a-zA-Z][a-zA-Z_0-9]*)((?:\s*\,\s*)(?:PRIMARY\s+)?(?:(STRING|BOOLEAN|INTEGER))\s+(?:[a-zA-Z][a-zA-Z_0-9]*))*)\)
-			"CREATE\\s+TABLE\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\\s*\\((?<inside>\\s*(?:PRIMARY\\s+)?(?:(STRING|BOOLEAN|INTEGER))\\s+(?:[a-zA-Z][a-zA-Z_0-9]*)((?:\\s*\\,\\s*)(?:PRIMARY\\s+)?(?:(STRING|BOOLEAN|INTEGER))\\s+(?:[a-zA-Z][a-zA-Z_0-9]*))*)\\)",
+			//CREATE\s+TABLE\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\s*\(\s*(?<inside>(?:PRIMARY\s+)?(?:(STRING|BOOLEAN|INTEGER))\s+(?:[a-zA-Z][a-zA-Z_0-9]*)((?:\s*\,\s*)(?:PRIMARY\s+)?(?:(STRING|BOOLEAN|INTEGER))\s+(?:[a-zA-Z][a-zA-Z_0-9]*))*)\s*\)
+			"CREATE\\s+TABLE\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\\s*\\(\\s*(?<inside>(?:PRIMARY\\s+)?(?:(STRING|BOOLEAN|INTEGER))\\s+(?:[a-zA-Z][a-zA-Z_0-9]*)((?:\\s*\\,\\s*)(?:PRIMARY\\s+)?(?:(STRING|BOOLEAN|INTEGER))\\s+(?:[a-zA-Z][a-zA-Z_0-9]*))*)\\s*\\)",
 			Pattern.CASE_INSENSITIVE
 		);
 	}
