@@ -62,7 +62,7 @@ public class DCreate implements Driver{
 							primaryFound = true;
 							success = true;
 							table.getSchema().put("primary_index", i);
-						} else
+						} else // if primary already found
 						{
 							dupePrimary = true;
 							success = false;
