@@ -15,8 +15,8 @@ public class DInsert implements Driver{
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-				//INSERT\s+INTO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\s*\(\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\s*,\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\s*\))?\s+VALUES\s*\(\s*(?<vals>[a-zA-Z0-9_]+(?:(?:\s*,\s*)(?:[a-zA-Z0-9_]+))*)\s*\)
-				"INSERT\\s+INTO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\(\\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\\s*,\\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\\s*\\))?\\s+VALUES\\s*\\(\\s*(?<vals>[a-zA-Z0-9_]+(?:(?:\\s*,\\s*)(?:[a-zA-Z0-9_]+))*)\\s*\\)",
+				//INSERT\s+INTO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\s*\(\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\s*,\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\s*\))?\s+VALUES\s*\(\s*(?<vals>[a-zA-Z0-9_\s]+(?:(?:\s*,\s*)(?:[a-zA-Z0-9_\s]+))*)\s*\)
+				"INSERT\\s+INTO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\(\\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\\s*,\\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\\s*\\))?\\s+VALUES\\s*\\(\\s*(?<vals>[a-zA-Z0-9_\\s]+(?:(?:\\s*,\\s*)(?:[a-zA-Z0-9_\\s]+))*)\\s*\\)",
 				Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -24,17 +24,16 @@ public class DInsert implements Driver{
 	@Override
 	public Response execute(Database db, String query) 
 	{
-		/*TODO: Fix the column name recognition and
-		 * the check for dupe primary in table
-		 */
+		//Initialize method variables
+		HashSet<String> primarySet = null;
+		int primaryInt = 0;
 		//Initialize Return variables
 		Table table = null;
 		String message = null;
 		boolean success = true;
 		
 		//error Flags
-		boolean cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false;
-		
+		boolean cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false, pFound = false, dupePrimary = false;	
 		//Init function vars
 		Matcher matcher = pattern.matcher(query.trim());
 		
@@ -49,19 +48,23 @@ public class DInsert implements Driver{
 			if(matcher.group("colNames") != null)	//If the user defined column names...	
 			{
 				colNames = matcher.group("colNames").split("\\s*,\\s*");
-				
+				String primary = table.getSchema().getStringList("column_names").get(table.getSchema().getInteger("primary_index"));
 				/*VALIDATE COLNAMES*/
 				{
 					Set<String> colNamesSet = new HashSet<String>();
 					for(int i = 0; (i < colNames.length) && !cnDneInTable && !dupeCn; i++)
 					{
-						if(table.containsKey(colNames[i]))	//Colname is valid
+						if(table.getSchema().getStringList("column_names").contains(colNames[i]))	//Colname is valid
 						{
 							colNamesSet.add(colNames[i]);
 							if(colNamesSet.size() != i+1)	//Not a dupe
 							{
 								success = false;
 								dupeCn = true;
+							}
+							if(primary.equals(colNames[i]))
+							{
+								pFound = true;
 							}
 						} else //Colname is not valid
 						{
@@ -76,6 +79,14 @@ public class DInsert implements Driver{
 				colNames = toStringArray(table.getSchema().getStringList("column_names").toArray());
 			}
 			
+			/*INITIALIZE PRIMARYSET*/
+			primarySet = new HashSet<String>();
+			for(Object obj : table.keySet())
+			{
+				primarySet.add(obj.toString());
+			}
+			/**************/
+			
 			values = matcher.group("vals").split("\\s*,\\s*");	//Values
 			
 			if(values.length == colNames.length)	//If the value list has the same number as the columnNames list
@@ -83,22 +94,33 @@ public class DInsert implements Driver{
 				
 				Iterator<String> itr = table.getSchema().getStringList("column_names").iterator();
 				Row row = new Row();
-				
 				{
 					String colName;
-					int index = -1;
-					while(itr.hasNext())
+					int index = -1, counter = 0;
+					while(itr.hasNext() && !dataTypeMismatch && !dupePrimary)		//For each of the names in column_names...
 					{
-						colName = itr.next();
-						index = indexOf(colNames,colName);
+						colName = itr.next();	//set the colName to the column we are on...
+						index = indexOf(colNames,colName);	//Find its index in the array we've specified
 						if(index != -1)		//If the colName was found in the colNames...
 						{
 							try
 							{
-								if(table.getSchema().getStringList("column_types").get(index).equals("integer"))	//If it's an integer...
+								/*CHECK IF DUPE PRIMARY*/
+								if(colName.equals(table.getSchema().getStringList("column_names").get(table.getSchema().getInteger("primary_index"))))	//If we are on the primary column
+								{
+									if(!primarySet.add(values[index])) //If there was a problem adding the object to the primary set...
+									{
+										success = false;
+										dupePrimary = true;
+									}
+									primaryInt = counter;
+								}
+								/**********/
+								
+								if(table.getSchema().getStringList("column_types").get(counter).equals("integer"))	//If it's an integer...
 								{
 									row.add(Integer.parseInt(values[index]));
-								} else if (table.getSchema().getStringList("column_types").get(index).equals("boolean"))	//If its a Boolean..
+								} else if (table.getSchema().getStringList("column_types").get(counter).equals("boolean"))	//If its a Boolean..
 								{
 									if(values[index].toLowerCase().equals("false"))
 									{
@@ -110,10 +132,11 @@ public class DInsert implements Driver{
 									{
 										throw new IllegalArgumentException();
 									}
-								} else if (table.getSchema().getStringList("column_types").get(index).equals("string"))	//If its a String...
+								} else if (table.getSchema().getStringList("column_types").get(counter).equals("string"))	//If its a String...
 								{
 									row.add(values[index]);
 								}
+								
 							} catch (NumberFormatException e)
 							{
 								success = false;
@@ -129,13 +152,14 @@ public class DInsert implements Driver{
 						{
 							row.add(null);	//add a null to that row
 						}
+						
+						counter++;
 					}
-				}
-				
+				}	
 				
 				if(success) //If nothing went wrong
 				{
-					table.put(values[table.getSchema().getInteger("primary_index")], row);
+					table.put(values[primaryInt], row);
 					
 					success = true;
 					message = "Table Name: " + matcher.group("tabName") + "; Number of rows: " + table.size();
@@ -143,22 +167,30 @@ public class DInsert implements Driver{
 				{
 					//cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false
 					/*EXCEPTION PRIORITY CHAIN
-					 * !existsInTable > cnDneInTable > dupeCn > mismatchedValuesColName > dataTypeMismatch
+					 * !existsInTable > cnDneInTable > dupeCn > dupePrimary > mismatchedValuesColName > dataTypeMismatch > !pFound
 					 */
-					message = null;
-					
+
 					if(cnDneInTable)
 					{
 						message = "Column name specified did not exist in database!";
 					}else if(dupeCn)
 					{
 						message = "Duplicate column name!";
-					} else if(mismatchedValuesColNames)
+					}else if(dupePrimary)
+					{
+						message = "The primary value must be unique!";
+					}else if(mismatchedValuesColNames)
 					{
 						message = "There is a mismatch of column/value pairs!";
-					} else if(dataTypeMismatch)
+					}else if(dataTypeMismatch)
 					{
 						//Message already set
+					}else if(!pFound)
+					{
+						message = "Primary column necessary but not included!";
+					}else	//If there is an error we didnt catch...
+					{
+						message = "Something went wrong and I don't know what! Check for success = false without a flag!";
 					}
 					
 					success = false;
@@ -189,16 +221,19 @@ public class DInsert implements Driver{
 		return output;
 	}
 	
-	private int indexOf(Object[] arr, Object obj)
+	private int indexOf(Object[] arr, Object... objs)
 	{
 		boolean found = false;
 		int output = -1;
 		for(int i = 0; (i < arr.length) && !found; i++)
 		{
-			if(arr[i].equals(obj))
+			for(Object obj : objs)
 			{
-				output = i;
-				found = true;
+				if(arr[i].equals(obj))
+				{
+					output = i;
+					found = true;
+				}
 			}
 		}
 		
