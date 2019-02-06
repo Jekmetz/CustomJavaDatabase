@@ -47,7 +47,6 @@ public class DTable implements Driver {
 			List<String> types = new ArrayList<String>();
 			
 			{
-				int i = 0;
 				Row row = null;
 				for(String arg : args)
 				{	
@@ -71,8 +70,6 @@ public class DTable implements Driver {
 					
 					row = new Row();
 					table.put(submatcher.group("name"), row);
-					
-					i++;
 				}
 			}
 			
