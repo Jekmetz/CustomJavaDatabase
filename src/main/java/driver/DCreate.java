@@ -25,7 +25,7 @@ public class DCreate implements Driver{
 	
 	@Override
 	public Response execute(Database db, String query)
-       	{
+    {
 		//Initialize Return variables
 		Table table = new Table();
 		String message = null;
@@ -56,13 +56,13 @@ public class DCreate implements Driver{
 									
 					if(colDefs.length == 3)		//If it has three elements (ex: primary boolean colName)
 					{
-						if(!primaryFound)
+						if(!primaryFound)	//if the primary has not been found...
 						{
 							pFound = 1;
 							primaryFound = true;
 							success = true;
 							table.getSchema().put("primary_index", i);
-						} else
+						} else				//if the primary has already been found
 						{
 							dupePrimary = true;
 							success = false;
