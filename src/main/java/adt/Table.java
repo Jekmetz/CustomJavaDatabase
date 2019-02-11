@@ -8,7 +8,7 @@ import adt.HashMap;
  * 
  * Additional features may be implemented.
  */
-public class Table extends HashMap<Object, Row> {
+public class Table extends HashMap<Object, Row> implements Cloneable{
 	private static final long serialVersionUID = 1L;
 	
 	/** Do not modify. **/
@@ -34,5 +34,11 @@ public class Table extends HashMap<Object, Row> {
 	public Table(Table table) {
 		super(table);
 		setSchema(new Schema(table.schema));
+	}
+	
+	//Slightly redundant since there is a copy constructor but .clone might be easier to read in the code
+	public Table clone()
+	{
+		return new Table(this);
 	}
 }

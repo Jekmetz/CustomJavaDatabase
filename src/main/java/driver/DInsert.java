@@ -10,13 +10,19 @@ import adt.Database;
 import adt.Response;
 import adt.Row;
 import adt.Table;
+import exceptions.NoParensException;
+import exceptions.PrimaryNullException;
 
 public class DInsert implements Driver{
 	private static final Pattern pattern;
+	//[a-zA-Z][a-zA-Z0-9_]*
+	private static final String COLNORMAL = "[a-zA-Z][a-zA-Z0-9_]*";
+	//(?:true|false|null|\"[^\"]+\"|[+-]?[0-9]+)
+	private static final String VALNORMAL = "(?:true|false|null|\\\"[^\\\"]+\\\"|[+-]?[0-9]+)";
 	static {
 		pattern = Pattern.compile(
-				//INSERT\s+INTO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\s*\(\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\s*,\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\s*\))?\s+VALUES\s*\(\s*(?<vals>[a-zA-Z0-9_\s]+(?:(?:\s*,\s*)(?:[a-zA-Z0-9_\s]+))*)\s*\)
-				"INSERT\\s+INTO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\(\\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\\s*,\\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\\s*\\))?\\s+VALUES\\s*\\(\\s*(?<vals>[a-zA-Z0-9_\\s]+(?:(?:\\s*,\\s*)(?:[a-zA-Z0-9_\\s]+))*)\\s*\\)",
+				//INSERT\s+INTO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\s*\(\s*(?<colNames>[a-zA-Z][a-zA-Z0-9_]*(?:(?:\s*,\s*)(?:[a-zA-Z][a-zA-Z0-9_]*))*)\s*\))?\s+VALUES\s*\(\s*(?<vals>(?:true|false|null|\"[^\"]+\"|[+-]?[0-9]+)(?:(?:\s*,\s*)(?:(?:true|false|null|\"[^\"]+\"|[+-]?[0-9]+)))*)\s*\)
+				"INSERT\\s+INTO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)(?:\\s*\\(\\s*(?<colNames>" + COLNORMAL + "(?:(?:\\s*,\\s*)(?:" + COLNORMAL + "))*)\\s*\\))?\\s+VALUES\\s*\\(\\s*(?<vals>" + VALNORMAL + "(?:(?:\\s*,\\s*)(?:" + VALNORMAL + "))*)\\s*\\)",
 				Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -33,7 +39,7 @@ public class DInsert implements Driver{
 		boolean success = true;
 		
 		//error Flags
-		boolean cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false, pFound = false, dupePrimary = false;	
+		boolean cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false, pFound = false, dupePrimary = false, primaryNull = false;	
 		//Init function vars
 		Matcher matcher = pattern.matcher(query.trim());
 		
@@ -86,7 +92,7 @@ public class DInsert implements Driver{
 				primarySet.add(obj.toString());
 			}
 			/**************/
-			
+		
 			values = matcher.group("vals").split("\\s*,\\s*");	//Values
 			
 			if(values.length == colNames.length)	//If the value list has the same number as the columnNames list
@@ -108,10 +114,16 @@ public class DInsert implements Driver{
 								/*CHECK IF DUPE PRIMARY*/
 								if(colName.equals(table.getSchema().getStringList("column_names").get(table.getSchema().getInteger("primary_index"))))	//If we are on the primary column
 								{
-									if(!primarySet.add(values[index])) //If there was a problem adding the object to the primary set...
+									if(!values[index].equals("null")) //If they didn't try to add null to the primary val...
 									{
-										success = false;
-										dupePrimary = true;
+										if(!primarySet.add(values[index])) //If there was a problem adding the object to the primary set...
+										{
+											success = false;
+											dupePrimary = true;
+										}
+									} else //if they tried to add null to the primary value...
+									{
+										throw new PrimaryNullException();
 									}
 									primaryInt = counter;
 								}
@@ -119,7 +131,13 @@ public class DInsert implements Driver{
 								
 								if(table.getSchema().getStringList("column_types").get(counter).equals("integer"))	//If it's an integer...
 								{
-									row.add(Integer.parseInt(values[index]));
+									if(!values[index].equals("null"))	//if not null...
+									{
+										row.add(Integer.parseInt(values[index]));
+									} else //if is null...
+									{
+										row.add(null);
+									}
 								} else if (table.getSchema().getStringList("column_types").get(counter).equals("boolean"))	//If its a Boolean..
 								{
 									if(values[index].toLowerCase().equals("false"))
@@ -128,13 +146,28 @@ public class DInsert implements Driver{
 									} else if (values[index].toLowerCase().equals("true"))
 									{
 										row.add(true);
-									} else
+									} else if (values[index].toLowerCase().equals("null"))
+									{
+										row.add(null);
+									}else
 									{
 										throw new IllegalArgumentException();
 									}
 								} else if (table.getSchema().getStringList("column_types").get(counter).equals("string"))	//If its a String...
 								{
-									row.add(values[index]);
+									if(!values[index].equals("null"))	//If not null...
+									{
+										if((values[index].charAt(0) == '\"') && (values[index].charAt(values[index].length()-1) == '\"'))	// check if surrounded by parenthesis
+										{
+											row.add(values[index].substring(1,values[index].length() - 1));
+										} else	//if it's not surrounded by parenthesis...
+										{
+											throw new NoParensException();
+										}
+									} else //If is null
+									{
+										row.add(null);
+									}
 								}
 								
 							} catch (NumberFormatException e)
@@ -147,6 +180,15 @@ public class DInsert implements Driver{
 								success = false;
 								dataTypeMismatch = true;
 								message = "Mismatched boolean values at index: " + index;
+							} catch (NoParensException e)
+							{
+								success = false;
+								dataTypeMismatch = true;
+								message = "Expected parenthesis surrounded string but no parenthesis were found!";
+							} catch (PrimaryNullException e)
+							{
+								success = false;
+								primaryNull = true;
 							}
 						}else				//If the colName was not found in the colNames...
 						{
@@ -161,13 +203,15 @@ public class DInsert implements Driver{
 				{
 					table.put(values[primaryInt], row);
 					
+					table = table.clone();	//It is computed table now! wooh. Useless, but wooh.
+					table.getSchema().put("table_name", null);
 					success = true;
 					message = "Table Name: " + matcher.group("tabName") + "; Number of rows: " + table.size();
 				} else		//If something went wrong
 				{
 					//cnDneInTable = false, dupeCn = false, mismatchedValuesColNames = false, dataTypeMismatch = false
 					/*EXCEPTION PRIORITY CHAIN
-					 * !existsInTable > cnDneInTable > dupeCn > dupePrimary > mismatchedValuesColName > dataTypeMismatch > !pFound
+					 * !existsInTable > cnDneInTable > dupeCn > dupePrimary > mismatchedValuesColName > primaryNull > dataTypeMismatch > !pFound
 					 */
 
 					if(cnDneInTable)
@@ -182,6 +226,9 @@ public class DInsert implements Driver{
 					}else if(mismatchedValuesColNames)
 					{
 						message = "There is a mismatch of column/value pairs!";
+					}else if (primaryNull)
+					{
+						message = "The primary value can not be null!";
 					}else if(dataTypeMismatch)
 					{
 						//Message already set
