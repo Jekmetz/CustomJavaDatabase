@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * Additional features may be implemented.
  */
-public class Schema extends HashMap<String, Object> {
+public class Schema extends HashMap<String, Object> implements Cloneable{
 	private static final long serialVersionUID = 1L;
 
 	/** Do not modify. **/
@@ -36,5 +36,11 @@ public class Schema extends HashMap<String, Object> {
     /** Do not modify. **/
     public Integer getInteger(String key) {
     	return (Integer) get(key);
+    }
+    
+    //Slightly redundant since there is a copy constructor but .clone might be easier to read in the code
+    public Schema clone()
+    {
+    	return new Schema(this);
     }
 }

@@ -1,9 +1,9 @@
 package driver;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +38,7 @@ public class DCreate implements Driver{
 		
 		if(!db.containsKey(matcher.group("tabName")))	//If the table doesn't exist already...
 		{
-			Set<String> colNames = new TreeSet<String>();
+			Set<String> colNames = new HashSet<String>();
 			success = false;		//success is false until a primary is found
 			boolean dupePrimary = false, dupeColName = false, primaryFound = false;	//various checks
 			String[] args = matcher.group("inside").split("\\s*,\\s*");		//split by comma
@@ -62,7 +62,7 @@ public class DCreate implements Driver{
 							primaryFound = true;
 							success = true;
 							table.getSchema().put("primary_index", i);
-						} else
+						} else // if primary already found
 						{
 							dupePrimary = true;
 							success = false;
