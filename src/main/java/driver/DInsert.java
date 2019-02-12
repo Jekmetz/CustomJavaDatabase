@@ -228,7 +228,7 @@ public class DInsert implements Driver {
 					{
 						table.put(primaryObject, row);
 
-						computedTable.put(values[primaryInt], row);
+						computedTable.put(primaryObject, row);
 						computedTable.setSchema(table.getSchema().clone());
 						computedTable.getSchema().put("table_name", null);
 						success = true;
