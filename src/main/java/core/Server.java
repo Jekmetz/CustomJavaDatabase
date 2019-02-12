@@ -30,14 +30,14 @@ public class Server {
 
 		// TODO: Add each new driver as it is implemented.
 		drivers = new LinkedList<Driver>();
-		drivers.add(new DEcho());
-		drivers.add(new DCreate());
-		drivers.add(new DDrop());
-		drivers.add(new DShow());
-		drivers.add(new DSquares());
-		drivers.add(new DDump());
-		drivers.add(new DInsert());
-		drivers.add(new DGetTypes());
+		drivers.add( new DEcho()     );
+		drivers.add( new DCreate()   );
+		drivers.add( new DDrop()     );
+		drivers.add( new DShow()     );
+		drivers.add( new DSquares()  );
+		drivers.add( new DDump()     );
+		drivers.add( new DInsert()   );
+		drivers.add( new DGetTypes() );
 		// drivers.add(new DRange());
 		// drivers.add(new DTable());
 	}
@@ -63,17 +63,14 @@ public class Server {
 					response = driver.execute(database, query); // execute that query through the driver
 					if (response != null) 					// if response...
 					{
-						responses.add(response); 	// add it
-						
+						responses.add(response); 	// add it						
 						found = true; 				// ITS BEEN FOUND... HUZZAH!
 					}
-
 				}
 				if (!found) // if not found...
 					responses.add(new Response(false, "Unrecognized query: " + query, null)); // show that.
 			}
 		}
-
 		return responses; // Give the people what they want
 	}
 }
