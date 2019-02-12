@@ -37,6 +37,7 @@ public class Server {
 		drivers.add(new DSquares());
 		drivers.add(new DDump());
 		drivers.add(new DInsert());
+		drivers.add(new DGetTypes());
 		// drivers.add(new DRange());
 		// drivers.add(new DTable());
 	}
