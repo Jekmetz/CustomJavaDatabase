@@ -30,14 +30,15 @@ public class Server {
 
 		// TODO: Add each new driver as it is implemented.
 		drivers = new LinkedList<Driver>();
-		drivers.add( new DEcho()     );
-		drivers.add( new DCreate()   );
-		drivers.add( new DDrop()     );
-		drivers.add( new DShow()     );
-		drivers.add( new DSquares()  );
-		drivers.add( new DDump()     );
-		drivers.add( new DInsert()   );
-		drivers.add( new DGetTypes() );
+		drivers.add( new DEcho()       );
+		drivers.add( new DCreate()     );
+		drivers.add( new DDrop()       );
+		drivers.add( new DShow()       );
+		drivers.add( new DSquares()    );
+		drivers.add( new DDump()       );
+		drivers.add( new DInsert()     );
+		drivers.add( new DGetTypes()   );
+		drivers.add( new DAlterInsert());
 		// drivers.add(new DRange());
 		// drivers.add(new DTable());
 	}
