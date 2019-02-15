@@ -72,7 +72,7 @@ public class DAlterInsert implements Driver {
 					colNames.add(matcher.group("colName"));
 					break;
 					
-				default:	//This means that it is AFTER colname TODO:
+				default:	
 					insertIndex = colNames.indexOf(matcher.group("predColName")) + 1;
 					if(primaryIndex <= insertIndex)
 						table.getSchema().put("primary_index", primaryIndex + 1);
