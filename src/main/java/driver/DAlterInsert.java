@@ -1,6 +1,7 @@
 package driver;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,7 +46,7 @@ public class DAlterInsert implements Driver {
 				success = false;
 				dupeColName = true;
 			}
-			if( (matcher.group("predColName") != null) && (table.getSchema().getStringList("column_names").indexOf(matcher.group("predColName")) == -1) )
+			if( (matcher.group("predColName") != null) && (colNames.indexOf(matcher.group("predColName")) == -1) )
 			{
 				success = false;
 				noPredColName = true;
@@ -63,19 +64,19 @@ public class DAlterInsert implements Driver {
 				case "first":
 					insertIndex = 0;
 					table.getSchema().put("primary_index", primaryIndex+1);
-					table.getSchema().getStringList("column_names").add(insertIndex, matcher.group("colName"));
+					colNames.add(insertIndex, matcher.group("colName"));
 					break;
 					
 				case "last":
 					insertIndex = -1;
-					table.getSchema().getStringList("column_names").add(matcher.group("colName"));
+					colNames.add(matcher.group("colName"));
 					break;
 					
 				default:	//This means that it is AFTER colname TODO:
-					insertIndex = table.getSchema().getStringList("column_names").indexOf(matcher.group("predColName")) + 1;
+					insertIndex = colNames.indexOf(matcher.group("predColName")) + 1;
 					if(primaryIndex <= insertIndex)
 						table.getSchema().put("primary_index", primaryIndex + 1);
-					table.getSchema().getStringList("column_names").add(insertIndex,matcher.group("colName"));
+					colNames.add(insertIndex,matcher.group("colName"));
 					break;
 				}
 				
@@ -83,6 +84,25 @@ public class DAlterInsert implements Driver {
 					table.getSchema().getStringList("column_types").add(matcher.group("colType").toLowerCase());
 				else
 					table.getSchema().getStringList("column_types").add(insertIndex,matcher.group("colType").toLowerCase());
+				
+				/*INSERT ALL THE NULLS*/
+				if ( table.size() != 0 )	//If the list is not empty
+				{
+					Set<Object> keySet = table.keySet();
+					if ( insertIndex == -1 )	//If inserting at the end
+					{
+						for (Object key : keySet)
+							table.get(key).add(null);
+						
+					} else			//If inserting in the beginning or the middle
+					{
+						for (Object key : keySet)
+							table.get(key).add(insertIndex,null);
+							
+					}
+				}
+				/**********/
+				
 			}
 			
 			if (success) //If everything finished well enough...
