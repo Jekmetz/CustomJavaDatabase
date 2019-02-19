@@ -13,8 +13,8 @@ public class DAlterInsert implements Driver {
 	public static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-				//ALTER\s+TABLE\s+(?<tabName>[a-z][a-z0-9_]*)\s+INSERT\s+COLUMN\s+(?<colType>STRING|BOOLEAN|INTEGER)\s+(?<colName>[a-z][a-z0-9_]*)(?<colWhere>\s+(FIRST|AFTER\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?
-				"ALTER\\s+TABLE\\s+(?<tabName>[a-z][a-z0-9_]*)\\s+INSERT\\s+COLUMN\\s+(?<colType>STRING|BOOLEAN|INTEGER)\\s+(?<colName>[a-z][a-z0-9_]*)(?<colWhere>\\s+(FIRST|AFTER\\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?",
+				//ALTER\s+TABLE\s+(?<tabName>[a-z][a-z0-9_]*)\s+INSERT\s+COLUMN\s+(?<colType>STRING|BOOLEAN|INTEGER)\s+(?<colName>[a-z][a-z0-9_]*)\s+(?<colWhere>(?:FIRST|AFTER\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?
+				"ALTER\\s+TABLE\\s+(?<tabName>[a-z][a-z0-9_]*)\\s+INSERT\\s+COLUMN\\s+(?<colType>STRING|BOOLEAN|INTEGER)\\s+(?<colName>[a-z][a-z0-9_]*)\\s+(?<colWhere>(?:FIRST|AFTER\\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?",
 				Pattern.CASE_INSENSITIVE
 				);
 	}
@@ -58,7 +58,7 @@ public class DAlterInsert implements Driver {
 				String colWhere = matcher.group("colWhere");
 				if(matcher.group("colWhere") == null)	//If it doesn't exist, Treat it as if it were last
 					colWhere = "last";
-				
+
 				switch(colWhere.toLowerCase())
 				{
 				case "first":
