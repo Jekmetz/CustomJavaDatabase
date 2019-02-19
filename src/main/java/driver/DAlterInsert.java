@@ -36,9 +36,9 @@ public class DAlterInsert implements Driver {
 		
 		if(db.containsKey(matcher.group("tabName")))	//If the database contains the table...
 		{
-			table = db.get(matcher.group("tabName"));
-			List<String> colNames = table.getSchema().getStringList("column_names");
-			Integer primaryIndex = table.getSchema().getInteger("primary_index");
+			table = db.get(matcher.group("tabName"));									//Initialize table to the literal table in the database
+			List<String> colNames = table.getSchema().getStringList("column_names");	//Initialize colNames to a reference from the table
+			final Integer primaryIndex = table.getSchema().getInteger("primary_index");	//Initialize primaryIndex to an unchangeable reference from the table
 			
 			/*VALIDATE COLNAME and PREDCOLNAME*/
 			if(colNames.indexOf(matcher.group("colName")) != -1)
@@ -93,12 +93,10 @@ public class DAlterInsert implements Driver {
 					{
 						for (Object key : keySet)
 							table.get(key).add(null);
-						
 					} else			//If inserting in the beginning or the middle
 					{
 						for (Object key : keySet)
-							table.get(key).add(insertIndex,null);
-							
+							table.get(key).add(insertIndex,null);	
 					}
 				}
 				/**********/
