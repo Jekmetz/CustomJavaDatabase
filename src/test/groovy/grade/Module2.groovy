@@ -82,7 +82,7 @@ class Module2 {
 		[ false, 'INSERT INTO table_2 (s, b) VALUES ("h13", true)', 'every row requires a primary column value' ],
 		[ false, 'INSERT INTO table_2 (pi) VALUES (null)', 'primary column values cannot be null' ],
 		[ false, 'INSERT INTO table_2 (s, pi, b) VALUES ("h14", null, false)', 'primary column values cannot be null' ],
-		[ false, 'INSERT INTO table_2 (s, pi, b) VALUES ("h15", 16, true); INSERT INTO table_1 (s, pi, b) VALUES ("h17", 16, false)', 'different rows may not share the same primary column value' ],
+		[ false, 'INSERT INTO table_2 (s, pi, b) VALUES ("h15", 16, true); INSERT INTO table_2 (s, pi, b) VALUES ("h17", 16, false)', 'different rows may not share the same primary column value' ],
 		
 		// PRIMARY COLUMN BOOLEAN (INDEX NON-ZERO)
 		[ true,  'CREATE TABLE table_3 (STRING s, INTEGER i, PRIMARY BOOLEAN pb)', 'insertion depends on table creation' ],
