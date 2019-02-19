@@ -17,7 +17,7 @@ public class DInsert implements Driver {
 	private static final Pattern pattern;
 	// [a-zA-Z][a-zA-Z0-9_]*
 	private static final String COLNORMAL = "[a-zA-Z][a-zA-Z0-9_]*";
-	// (?:true|false|null|\"[^\"]+\"|[+-]?[0-9]+)
+	// (?:true|false|null|\"[^\"]*\"|[+-]?[0-9]+)
 	private static final String VALNORMAL = "(?:true|false|null|\\\"[^\\\"]*\\\"|[+-]?(0|[1-9][0-9]*))";
 	static {
 		pattern = Pattern.compile(
