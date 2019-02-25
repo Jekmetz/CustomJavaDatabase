@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import adt.Response;
 import adt.Table;
+import adt.Row;
 
 /** 
  * This class implements an interactive console
@@ -54,7 +55,7 @@ public class Console {
 					//Print it out
 					out.println("Success: " + response.get("success"));
 					out.println("Message: " + response.get("message"));
-					out.println("Table:   " + formatResponse((Table)response.get("table")));
+					out.println("Table:\n" + formatResponse((Table)response.get("table")));
 					if(response.get("schema") != null) out.println("Schema:  " + response.get("schema"));
 					out.println();
 				}
@@ -69,35 +70,80 @@ public class Console {
 	
 	private static String formatResponse(Table table)
 	{
-		//Init tableVars
-		ArrayList<String> colNames = new ArrayList<String>(table.getSchema().getStringList("column_names"));
-		List<String> colTypes = table.getSchema().getStringList("column_types");
-		Integer primaryInt = table.getSchema().getInteger("primary_index");
-		String tabName = table.getSchema().getString("table_name");
-		//Init method vars
 		String output = "";
-		int numCols = colNames.size();
-		int colWidth = numCols*15;
-		int tabWidth = numCols*colWidth + 1 + numCols;
-		
-		if(tabName == null)	//If there is not a given table name...
+		if (table == null)
 		{
-			output += "+" + repeatStr("-",colWidth*numCols - 2) + "+"; //Add a tab to the front
-		} else //If there is a given table name...
+			output = "No table!";
+		}else
 		{
-			output += "  /" + repeatStr("-",tabName.length(),tabWidth) + "\\";
-			output += " /" + tabName + "\\";
-			output += "+" + repeatStr(" ",tabName.length(),tabWidth) + repeatStr("-",(colWidth*numCols - 2) - (tabName.length() >= tabWidth ? tabName.length():tabWidth)) + "+";
-		}
-		
-		colNames.set(primaryInt, "*" + colNames.get(primaryInt));
-		
-		output += "|";
-		for(String colName : colNames)
-		{
-			output += String.format("%" + colWidth + "s|",colName);
-		}
-		
+			//Init tableVars
+			ArrayList<String> colNames = new ArrayList<String>(table.getSchema().getStringList("column_names"));
+			List<String> colTypes = table.getSchema().getStringList("column_types");
+			Integer primaryInt = table.getSchema().getInteger("primary_index");
+			String tabName = table.getSchema().getString("table_name");
+			//Init method vars
+			int numCols = colNames.size();
+			int colWidth = 15;
+			int tabWidth = numCols*colWidth + 1 + numCols;
+			
+			if(tabName == null)	//If there is not a given table name...
+			{
+				output += "+" + repeatStr("-",tabWidth - 2) + "+\n"; //Add a tab to the front
+			} else //If there is a given table name...
+			{
+				output += "     " + repeatStr("-",tabName.length()-1,tabWidth) + "\n";
+				output += "   /" + tabName + "\\\n";
+				output += "+--" + repeatStr(" ",tabName.length()+2,tabWidth) + repeatStr("-",tabWidth - tabName.length() - 6) + "+\n";
+			}
+			
+			colNames.set(primaryInt, "*" + colNames.get(primaryInt));
+			
+			output += "|";
+			for(String colName : colNames)
+			{
+				output += String.format("%-" + colWidth + "s|",repeatStr(colName,1,colWidth));
+			}
+			
+			output += "\n|" + repeatStr("=",tabWidth-2) + "|\n";
+			
+			
+			/*At this point we've added the table name and
+			 *the column names 
+			 */
+			
+			if(table.size() > 0)	//If there are rows...
+			{
+				for(Row row : table.values())			//for every row in the table...
+				{
+					output += "|";
+					for(int i = 0; i < colNames.size(); i++)
+					{
+						if(row.get(i) == null) //If the object is null...
+						{
+							output += repeatStr(" ",colWidth);
+						} else if(colTypes.get(i).equals("integer"))
+						{
+							output += String.format("%" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
+						} else if(colTypes.get(i).equals("boolean"))
+						{
+							output += String.format("%" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
+						} else if(colTypes.get(i).equals("string"))
+						{
+							output += String.format("%-" + colWidth + "s","\"" + repeatStr(row.get(i).toString(), 1, colWidth - 2) + "\"");
+						}
+						output += "|";
+					}
+					output += "\n";
+				}
+			} else //If there are not rows...
+			{
+				output += "|" + repeatStr(" ",tabWidth - 2) + "|\n";
+			}
+			
+			/*Add the bottom*/
+			
+			output += "+" + repeatStr("-",tabWidth - 2) + "+";
+		}	
 		return output;
 	}
 	
@@ -107,17 +153,14 @@ public class Console {
 		boolean addElipses = false;
 		
 		if( (trunc.length >= 1) && (trunc[0] < str.length()*rep) )
-		{
-			rep = Math.floorDiv(trunc[0] - 3,str.length());
 			addElipses = true;
-		}
 		
 		for(int i = 0; i < rep; i++)
 			output += str;
 		
 		if(addElipses)
 		{
-			output += "...";
+			output = str.substring(0,trunc[0] - 3) + "...";
 		}
 		
 		return output;
