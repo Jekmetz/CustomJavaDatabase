@@ -184,9 +184,9 @@ class Module3 {
 			)
 		)
 		
-		assertTrue(
-			last?.get('success') == success_flag &&
-			responses.take(-1).count({!it.get('success')}) == 0,
+		assertEquals(
+			query_count == 1 ? success_flag : [true]*(query_count-1) + [success_flag],
+			query_count == 1 ? last.get('success') : responses.collect{it.get('success')},
 			String.format(
 				'%s %s was expected to %s%s%s.',
 				success_flag ? 'Valid' : 'Invalid',
