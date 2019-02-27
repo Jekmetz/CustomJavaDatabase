@@ -93,7 +93,7 @@ public class Console {
 			{
 				output += "     " + repeatStr("-",tabName.length()-1,tabWidth) + "\n";
 				output += "   /" + tabName + "\\\n";
-				output += "+--" + repeatStr(" ",tabName.length()+2,tabWidth) + repeatStr("-",tabWidth - tabName.length() - 6) + "+\n";
+				output += "+" + repeatStr("-",tabWidth - 2) + "+\n";
 			}
 			
 			colNames.set(primaryInt, "*" + colNames.get(primaryInt));
