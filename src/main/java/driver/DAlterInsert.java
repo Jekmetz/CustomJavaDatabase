@@ -13,8 +13,8 @@ public class DAlterInsert implements Driver {
 	public static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-				//ALTER\s+TABLE\s+(?<tabName>[a-z][a-z0-9_]*)\s+INSERT\s+COLUMN\s+(?<colType>STRING|BOOLEAN|INTEGER)\s+(?<colName>[a-z][a-z0-9_]*)(?<colWhere>\s+(FIRST|AFTER\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?
-				"ALTER\\s+TABLE\\s+(?<tabName>[a-z][a-z0-9_]*)\\s+INSERT\\s+COLUMN\\s+(?<colType>STRING|BOOLEAN|INTEGER)\\s+(?<colName>[a-z][a-z0-9_]*)(?<colWhere>\\s+(FIRST|AFTER\\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?",
+				//ALTER\s+TABLE\s+(?<tabName>[a-z][a-z0-9_]*)\s+INSERT\s+COLUMN\s+(?<colType>STRING|BOOLEAN|INTEGER)\s+(?<colName>[a-z][a-z0-9_]*)\s+(?<colWhere>(?:FIRST|AFTER\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?
+				"ALTER\\s+TABLE\\s+(?<tabName>[a-z][a-z0-9_]*)\\s+INSERT\\s+COLUMN\\s+(?<colType>STRING|BOOLEAN|INTEGER)\\s+(?<colName>[a-z][a-z0-9_]*)\\s+(?<colWhere>(?:FIRST|AFTER\\s+(?<predColName>[a-z][a-z0-9_]*)|LAST))?",
 				Pattern.CASE_INSENSITIVE
 				);
 	}
@@ -36,53 +36,53 @@ public class DAlterInsert implements Driver {
 		
 		if(db.containsKey(matcher.group("tabName")))	//If the database contains the table...
 		{
-			table = db.get(matcher.group("tabName"));
-			List<String> colNames = table.getSchema().getStringList("column_names");
-			Integer primaryIndex = table.getSchema().getInteger("primary_index");
+			table = db.get(matcher.group("tabName"));									//Initialize table to the literal table in the database
+			List<String> colNames = table.getSchema().getStringList("column_names");	//Initialize colNames to a reference from the table
+			Integer primaryIndex = table.getSchema().getInteger("primary_index");		//Initialize primaryIndex to a reference from the table
 			
 			/*VALIDATE COLNAME and PREDCOLNAME*/
-			if(colNames.indexOf(matcher.group("colName")) != -1)
+			if(colNames.indexOf(matcher.group("colName")) != -1)	//If the new colname already exists in the table...
 			{
-				success = false;
-				dupeColName = true;
+				success = false;		//Nope!
+				dupeColName = true;		//Set the flag
 			}
-			if( (matcher.group("predColName") != null) && (colNames.indexOf(matcher.group("predColName")) == -1) )
+			if( (matcher.group("predColName") != null) && (colNames.indexOf(matcher.group("predColName")) == -1) )	//If the predColName does not exist in the database...
 			{
-				success = false;
-				noPredColName = true;
+				success = false;		//Nope!
+				noPredColName = true;	//Set the flag
 			}
 			/***************/
 			
 			if (success)	//If everything is good up to this point...
 			{
-				String colWhere = matcher.group("colWhere");
-				if(matcher.group("colWhere") == null)	//If it doesn't exist, Treat it as if it were last
+				String colWhere = matcher.group("colWhere");	
+				if(matcher.group("colWhere") == null)			//If it doesn't exist, Treat it as if it were last
 					colWhere = "last";
-				
-				switch(colWhere.toLowerCase())
+
+				switch(colWhere.toLowerCase())		//Switching through possible values of colWhere...
 				{
-				case "first":
-					insertIndex = 0;
-					table.getSchema().put("primary_index", primaryIndex+1);
-					colNames.add(insertIndex, matcher.group("colName"));
+				case "first":													//If first...
+					insertIndex = 0;											//set insertIndex to 0
+					table.getSchema().put("primary_index", primaryIndex+1);		//the primary index has moved up one
+					colNames.add(insertIndex, matcher.group("colName"));		//Add the name to the first position in the column_names schema
 					break;
 					
-				case "last":
-					insertIndex = -1;
-					colNames.add(matcher.group("colName"));
+				case "last":								//If last...
+					insertIndex = -1;						//insertIndex = -1 signals that
+					colNames.add(matcher.group("colName"));	//Add it to the end
 					break;
 					
-				default:	
-					insertIndex = colNames.indexOf(matcher.group("predColName")) + 1;
-					if(primaryIndex <= insertIndex)
-						table.getSchema().put("primary_index", primaryIndex + 1);
-					colNames.add(insertIndex,matcher.group("colName"));
+				default:																//If is after <predColName>
+					insertIndex = colNames.indexOf(matcher.group("predColName")) + 1;	//insertIndex = find the index of the predCol + 1
+					if(insertIndex <= primaryIndex)										//if we are inserting before or at the primary index...
+						table.getSchema().put("primary_index", primaryIndex + 1);		//the primary index has moved up one
+					colNames.add(insertIndex,matcher.group("colName"));					//add the colName where it is supposed to go
 					break;
 				}
 				
-				if(insertIndex == -1)
+				if(insertIndex == -1)	//If inserting at the end...
 					table.getSchema().getStringList("column_types").add(matcher.group("colType").toLowerCase());
-				else
+				else	//If inserting at insertIndex...
 					table.getSchema().getStringList("column_types").add(insertIndex,matcher.group("colType").toLowerCase());
 				
 				/*INSERT ALL THE NULLS*/
@@ -93,12 +93,10 @@ public class DAlterInsert implements Driver {
 					{
 						for (Object key : keySet)
 							table.get(key).add(null);
-						
 					} else			//If inserting in the beginning or the middle
 					{
 						for (Object key : keySet)
-							table.get(key).add(insertIndex,null);
-							
+							table.get(key).add(insertIndex,null);	
 					}
 				}
 				/**********/
