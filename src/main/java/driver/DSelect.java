@@ -18,8 +18,8 @@ public class DSelect implements Driver {
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-				// SELECT\s+(?:\s*(?<colDefs>\*|(?:(?:[A-Za-z][A-Za-z0-9_]*(?:\s+AS\s+[A-Za-z][A-Za-z0-9_]*)?))(?:(?:\s*,\s*)(?:[A-Za-z][A-Za-z0-9_]*(?:\s+AS\s+[A-Za-z][A-Za-z0-9_]*)?))*)\s*)\s+FROM\s+(?<tabName>[A-Za-z][A-Za-z0-9_]*)(?<where>\s+WHERE\s+(?<lhs>[A-Za-z][A-Za-z0-9_]*)\s+(?<operator>(?:\=|\<\>|\<|\>|\<\=|\>\=))\s+(?<rhs>(?:true|false|null|\"[^\"]*\"|[+-]?(0|[1-9][0-9]*))))?
-				"SELECT\\s+(?:\\s*(?<colDefs>\\*|(?:(?:[A-Za-z][A-Za-z0-9_]*(?:\\s+AS\\s+[A-Za-z][A-Za-z0-9_]*)?))(?:(?:\\s*,\\s*)(?:[A-Za-z][A-Za-z0-9_]*(?:\\s+AS\\s+[A-Za-z][A-Za-z0-9_]*)?))*)\\s*)\\s+FROM\\s+(?<tabName>[A-Za-z][A-Za-z0-9_]*)(?<where>\\s+WHERE\\s+(?<lhs>[A-Za-z][A-Za-z0-9_]*)\\s+(?<operator>(?:\\=|\\<\\>|\\<|\\>|\\<\\=|\\>\\=))\\s+(?<rhs>(?:true|false|null|\\\"[^\\\"]*\\\"|[+-]?(0|[1-9][0-9]*))))?",
+				// SELECT\s+(?:\s*(?<colDefs>\*|(?:(?:[A-Za-z][A-Za-z0-9_]*(?:\s+AS\s+[A-Za-z][A-Za-z0-9_]*)?))(?:(?:\s*,\s*)(?:[A-Za-z][A-Za-z0-9_]*(?:\s+AS\s+[A-Za-z][A-Za-z0-9_]*)?))*)\s*)\s+FROM\s+(?<tabName>[A-Za-z][A-Za-z0-9_]*)(?<where>\s+WHERE\s+(?<lhs>[A-Za-z][A-Za-z0-9_]*)\s*(?<operator>(?:\=|\<\>|\<|\>|\<\=|\>\=))\s*(?<rhs>(?:true|false|null|\"[^\"]*\"|[+-]?(0|[1-9][0-9]*))))?
+				"SELECT\\s+(?:\\s*(?<colDefs>\\*|(?:(?:[A-Za-z][A-Za-z0-9_]*(?:\\s+AS\\s+[A-Za-z][A-Za-z0-9_]*)?))(?:(?:\\s*,\\s*)(?:[A-Za-z][A-Za-z0-9_]*(?:\\s+AS\\s+[A-Za-z][A-Za-z0-9_]*)?))*)\\s*)\\s+FROM\\s+(?<tabName>[A-Za-z][A-Za-z0-9_]*)(?<where>\\s+WHERE\\s+(?<lhs>[A-Za-z][A-Za-z0-9_]*)\\s*(?<operator>(?:\\=|\\<\\>|\\<|\\>|\\<\\=|\\>\\=))\\s*(?<rhs>(?:true|false|null|\\\"[^\\\"]*\\\"|[+-]?(0|[1-9][0-9]*))))?",
 				Pattern.CASE_INSENSITIVE);
 	}
 
@@ -88,13 +88,15 @@ public class DSelect implements Driver {
 						if(!aliasSet.add(aliasDef[aliasIndex]))	//If the aliasDef[0] cannot be added...
 							return new Response(false,"The alias \'" + aliasDef[aliasIndex] + "\' was used more than once!",null);	//kill it
 						
-						colIndex = colNames.indexOf(aliasDef[aliasIndex]);	//Find colIndex
+						colIndex = colNames.indexOf(aliasDef[0]);	//Find colIndex
 						
 						if(colIndex == -1) 	//If aliasDef[0] does not exist in the columns...
 							return new Response(false,"The column name \'" + aliasDef[aliasIndex] + "\' does not exist in the table!",null);
 					
 						computedColNames.add(aliasDef[aliasIndex]);
-						computedColTypes.add(aliasDef[aliasIndex]);
+						computedColTypes.add(colTypes.get(colIndex));
+						aliasMap.put(aliasDef[aliasIndex],colIndex);	//Add it to the map
+						
 						if(computedPrimaryIndex == null)	//If the computed primary index has not been set yet....	
 							if(colIndex == primaryIndex)	//If the column index is the primary index...
 								computedPrimaryIndex = counter;
@@ -105,18 +107,15 @@ public class DSelect implements Driver {
 					{
 						return new Response(false,"The primary column was not specified from the table!",null);
 					}
-					
-					computedSchema.put("table_name",computedTableName);
-					computedSchema.put("column_names",computedColNames);
-					computedSchema.put("column_types",computedColTypes);
-					computedSchema.put("primary_index",computedPrimaryIndex);
-					computedTable.setSchema(computedSchema);
-					System.out.println(computedTable.getSchema());
 				}
 				/************/
-				
-				
+						
 			}
+			computedSchema.put("table_name",computedTableName);
+			computedSchema.put("column_names",computedColNames);
+			computedSchema.put("column_types",computedColTypes);
+			computedSchema.put("primary_index",computedPrimaryIndex);
+			computedTable.setSchema(computedSchema);
 			/* At this point, the computed table schema is set and there
 			 * is a hashmap (aliasMap) that maps the alias name to the 
 			 * index in the actual table and these flags have been caught:
@@ -146,29 +145,27 @@ public class DSelect implements Driver {
 			
 			/*SET UP ROWS MAYBE WITH OPERATORS (=|<>|<|>|<=|>=)*/
 			Set<Object> primVals = table.keySet();
-
 			{
 				Row row = null;
 				Row valRow = null;
-				Integer colIndex = null;
+				Integer colIndex = null, lhsIndex = colNames.indexOf(matcher.group("lhs"));
 				boolean add = true, string = false, integer = false;
-				boolean whereNull = (where && !(matcher.group("lhs").equals("null")) && matcher.group("lhs").equals("null"));
+				boolean whereNull = (where && !matcher.group("lhs").equals("null")) && !matcher.group("lhs").equals("null");
 				Object lhs = null;
 				Object rhs = null;
 				
 				for(Object primVal : primVals)	//for each of the effective row keys in the table...
 				{
 					valRow = table.get(primVal); 	// make the val row which is the row we are looking at in the table... 
-					
 					/*CHECK TO SEE WHETHER OR NOT TO ADD THE ROW*/
 					if(whereNull)	//If the where group exists and one of them is not null
 					{
 						add = false;	//Assume we are not adding...
 						
-						lhs = valRow.get(colIndex); 				//Set the lhs object
+						lhs = valRow.get(lhsIndex); 				//Set the lhs object
 						rhs = convertToType(matcher.group("rhs")); 	//Set the rhs object
 						
-						if(typeOfString((String)rhs).equals("integer")) 
+						if(typeOfString(rhs.toString()).equals("integer")) 
 						{
 							integer = true;
 							string = false;
@@ -193,7 +190,7 @@ public class DSelect implements Driver {
 						case "<":
 							if(string)
 							{
-								if(((String)lhs).compareTo((String)rhs) < 0)
+								if((lhs.toString()).compareTo(rhs.toString()) < 0)
 									add = true;
 							} else if (integer)
 							{
@@ -205,6 +202,7 @@ public class DSelect implements Driver {
 						case ">":
 							if(string)
 							{
+								System.out.println(((String)lhs).compareTo((String)rhs));
 								if(((String)lhs).compareTo((String)rhs) > 0)
 									add = true;
 							} else if (integer)
@@ -217,7 +215,7 @@ public class DSelect implements Driver {
 						case "<=":
 							if(string)
 							{
-								if(((String)lhs).compareTo((String)rhs) <= 0)
+								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
 									add = true;
 							} else if (integer)
 							{
@@ -229,7 +227,7 @@ public class DSelect implements Driver {
 						case ">=":
 							if(string)
 							{
-								if(((String)lhs).compareTo((String)rhs) <= 0)
+								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
 									add = true;
 							} else if (integer)
 							{
@@ -265,7 +263,7 @@ public class DSelect implements Driver {
 		{
 			return new Response(false,"The table name \"" + matcher.group("tabName") + "\" does not exist in the database!",null);
 		}
-		
+
 		return new Response(true,"Command completed successfully!",computedTable);
 	}
 	
@@ -273,7 +271,7 @@ public class DSelect implements Driver {
 	{
 		String output = null;
 		
-		if((str.charAt(0) == '\"') && (str.charAt(str.length()) == '\"'))
+		if((str.charAt(0) == '\"') && (str.charAt(str.length()-1) == '\"'))
 			output = "string";
 		else if (str.equals("true") || str.equals("false"))
 			output = "boolean";
