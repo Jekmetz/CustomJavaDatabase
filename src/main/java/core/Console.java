@@ -126,7 +126,7 @@ public class Console {
 							output += String.format("%" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
 						} else if(colTypes.get(i).equals("boolean"))
 						{
-							output += String.format("%" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
+							output += String.format("%-" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
 						} else if(colTypes.get(i).equals("string"))
 						{
 							output += String.format("%-" + colWidth + "s","\"" + repeatStr(row.get(i).toString(), 1, colWidth - 2) + "\"");
