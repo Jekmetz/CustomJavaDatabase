@@ -173,6 +173,7 @@ public class DSelect implements Driver {
 						{
 							integer = false;
 							string = true;
+							rhs = ((String)rhs).substring(1,((String)rhs).length());
 						}
 						
 						switch(matcher.group("operator"))
@@ -202,7 +203,6 @@ public class DSelect implements Driver {
 						case ">":
 							if(string)
 							{
-								System.out.println(((String)lhs).compareTo((String)rhs));
 								if(((String)lhs).compareTo((String)rhs) > 0)
 									add = true;
 							} else if (integer)

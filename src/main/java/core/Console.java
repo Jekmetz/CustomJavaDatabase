@@ -91,7 +91,7 @@ public class Console {
 				output += "+" + repeatStr("-",tabWidth - 2) + "+\n"; //Add a tab to the front
 			} else //If there is a given table name...
 			{
-				output += "     " + repeatStr("-",tabName.length()-1,tabWidth) + "\n";
+				output += "    " + repeatStr("_",tabName.length(),tabWidth) + "\n";
 				output += "   /" + tabName + "\\\n";
 				output += "+" + repeatStr("-",tabWidth - 2) + "+\n";
 			}
