@@ -149,10 +149,11 @@ public class DSelect implements Driver {
 				Row row = null;
 				Row valRow = null;
 				Integer colIndex = null, lhsIndex = colNames.indexOf(matcher.group("lhs"));
-				boolean add = true, string = false, integer = false;
-				boolean whereNull = (where && !matcher.group("lhs").equals("null")) && !matcher.group("lhs").equals("null");
+				boolean add = true,lhsNull = false;
+				boolean whereNull = (where && !matcher.group("lhs").equals("null"));
 				Object lhs = null;
 				Object rhs = null;
+				String rhsType;
 				
 				for(Object primVal : primVals)	//for each of the effective row keys in the table...
 				{
@@ -165,22 +166,22 @@ public class DSelect implements Driver {
 						lhs = valRow.get(lhsIndex); 				//Set the lhs object
 						rhs = convertToType(matcher.group("rhs")); 	//Set the rhs object
 						
-						if(typeOfString(rhs.toString()).equals("integer")) 
-						{
-							integer = true;
-							string = false;
-						} else
-						{
-							integer = false;
-							string = true;
-							rhs = ((String)rhs).substring(1,((String)rhs).length());
-						}
+						lhsNull = lhs == null;
+						
+						rhsType = typeOfString(rhs.toString());
 						
 						switch(matcher.group("operator"))
 						{					
 						case "=":
-							if(lhs.equals(rhs))
-								add = true;
+							if(lhsNull)	//If the left hand side is null...
+							{
+								if(rhs == null)
+									add = true;
+							} else //If the left hand side is not null
+							{
+								if(lhs.equals(rhs))
+									add = true;
+							}
 							break;
 							
 						case "<>":
@@ -189,11 +190,11 @@ public class DSelect implements Driver {
 							break;
 							
 						case "<":
-							if(string)
+							if(rhsType.equals("string"))
 							{
 								if((lhs.toString()).compareTo(rhs.toString()) < 0)
 									add = true;
-							} else if (integer)
+							} else if (rhsType.equals("integer"))
 							{
 								if(((Integer)lhs).compareTo((Integer)rhs) < 0)
 									add = true;
@@ -201,11 +202,11 @@ public class DSelect implements Driver {
 							break;
 							
 						case ">":
-							if(string)
+							if(rhsType.equals("string"))
 							{
 								if(((String)lhs).compareTo((String)rhs) > 0)
 									add = true;
-							} else if (integer)
+							} else if (rhsType.equals("integer"))
 							{
 								if(((Integer)lhs).compareTo((Integer)rhs) > 0)
 									add = true;
@@ -213,11 +214,11 @@ public class DSelect implements Driver {
 							break;
 							
 						case "<=":
-							if(string)
+							if(rhsType.equals("string"))
 							{
 								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
 									add = true;
-							} else if (integer)
+							} else if (rhsType.equals("integer"))
 							{
 								if(((Integer)lhs).compareTo((Integer)rhs) <= 0)
 									add = true;
@@ -225,11 +226,11 @@ public class DSelect implements Driver {
 							break;
 							
 						case ">=":
-							if(string)
+							if(rhsType.equals("string"))
 							{
 								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
 									add = true;
-							} else if (integer)
+							} else if (rhsType.equals("integer"))
 							{
 								if(((Integer)lhs).compareTo((Integer)rhs) <= 0)
 									add = true;
