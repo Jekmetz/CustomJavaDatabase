@@ -132,10 +132,10 @@ public class DSelect implements Driver {
 				if(compColIndex == -1) //If the lhs is not found...
 					return new Response(true,"The left hand side column does not exist in the table!",null);
 				
-				if(!matcher.group("lhs").equals("null") || !matcher.group("rhs").equals("null"))	//If one of them is not null...
+				if(!matcher.group("rhs").equals("null"))	//If the right hand side is not null...
 				{
 					if(!typeOfString(matcher.group("rhs")).equals(colTypes.get(compColIndex))) //if the type of value does not match the type of column...
-						return new Response(false, "The type of value<" + colTypes.get(compColIndex) + "> does not match the value for the column given" + typeOfString(matcher.group("rhs")) + ">!",null);
+						return new Response(false, "The type of value <" + colTypes.get(compColIndex) + "> does not match the value for the column given <" + typeOfString(matcher.group("rhs")) + ">!",null);
 				
 					if(!matcher.group("operator").equals("=") && !matcher.group("operator").equals("<>") && typeOfString(matcher.group("rhs")).equals("boolean"))
 						return new Response(false, "Cannot compare booleans with anything other than '=' or '<>'!",null);
@@ -168,7 +168,7 @@ public class DSelect implements Driver {
 						
 						lhsNull = lhs == null;
 						
-						rhsType = typeOfString(rhs.toString());
+						rhsType = typeOfString(matcher.group("rhs"));
 						
 						switch(matcher.group("operator"))
 						{					
@@ -185,56 +185,67 @@ public class DSelect implements Driver {
 							break;
 							
 						case "<>":
-							if(!lhs.equals(rhs))
-								add = true;
+							if(lhsNull)	//If the left hand side is null...
+							{
+								if(rhs != null)
+									add = true;
+							} else //If the left hand side is not null
+							{
+								if(!lhs.equals(rhs))
+									add = true;
+							}
 							break;
 							
 						case "<":
-							if(rhsType.equals("string"))
-							{
-								if((lhs.toString()).compareTo(rhs.toString()) < 0)
-									add = true;
-							} else if (rhsType.equals("integer"))
-							{
-								if(((Integer)lhs).compareTo((Integer)rhs) < 0)
-									add = true;
-							}
+							if(!lhsNull) //If the lhs is not null...
+								if(rhsType.equals("string"))
+								{
+									if((lhs.toString()).compareTo(rhs.toString()) < 0)
+										add = true;
+								} else if (rhsType.equals("integer"))
+								{
+									if(((Integer)lhs).compareTo((Integer)rhs) < 0)
+										add = true;
+								}
 							break;
 							
 						case ">":
-							if(rhsType.equals("string"))
-							{
-								if(((String)lhs).compareTo((String)rhs) > 0)
-									add = true;
-							} else if (rhsType.equals("integer"))
-							{
-								if(((Integer)lhs).compareTo((Integer)rhs) > 0)
-									add = true;
-							}
+							if(!lhsNull) //If the lhs is not null...
+								if(rhsType.equals("string"))
+								{
+									if(((String)lhs).compareTo((String)rhs) > 0)
+										add = true;
+								} else if (rhsType.equals("integer"))
+								{
+									if(((Integer)lhs).compareTo((Integer)rhs) > 0)
+										add = true;
+								}
 							break;
 							
 						case "<=":
-							if(rhsType.equals("string"))
-							{
-								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
-									add = true;
-							} else if (rhsType.equals("integer"))
-							{
-								if(((Integer)lhs).compareTo((Integer)rhs) <= 0)
-									add = true;
-							}
+							if(!lhsNull) //If the lhs is not null...
+								if(rhsType.equals("string"))
+								{
+									if((lhs.toString()).compareTo(rhs.toString()) <= 0)
+										add = true;
+								} else if (rhsType.equals("integer"))
+								{
+									if(((Integer)lhs).compareTo((Integer)rhs) <= 0)
+										add = true;
+								}
 							break;
 							
 						case ">=":
-							if(rhsType.equals("string"))
-							{
-								if((lhs.toString()).compareTo(rhs.toString()) <= 0)
-									add = true;
-							} else if (rhsType.equals("integer"))
-							{
-								if(((Integer)lhs).compareTo((Integer)rhs) <= 0)
-									add = true;
-							}
+							if(!lhsNull) //If the lhs is not null...
+								if(rhsType.equals("string"))
+								{
+									if((lhs.toString()).compareTo(rhs.toString()) >= 0)
+										add = true;
+								} else if (rhsType.equals("integer"))
+								{
+									if(((Integer)lhs).compareTo((Integer)rhs) >= 0)
+										add = true;
+								}
 							break;
 						}
 					}
@@ -271,6 +282,7 @@ public class DSelect implements Driver {
 	private String typeOfString(String str)
 	{
 		String output = null;
+		if(str == null) str = "null";
 		
 		if((str.charAt(0) == '\"') && (str.charAt(str.length()-1) == '\"'))
 			output = "string";
@@ -298,7 +310,7 @@ public class DSelect implements Driver {
 			break;
 			
 		case "string":
-			output = str;
+			output = str.substring(1,str.length()-1);
 			break;
 			
 		case "integer":
