@@ -144,8 +144,7 @@ public class DInsert implements Driver {
 										}
 									}
 									/**********/
-									
-									
+					
 									if (table.getSchema().getStringList("column_types").get(counter).equals("integer")) //If its an integer...
 									{
 										if (!value.equals("null")) // if not null...
