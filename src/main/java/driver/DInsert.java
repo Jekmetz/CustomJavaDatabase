@@ -282,7 +282,7 @@ public class DInsert implements Driver {
 		{
 			success = false;
 			message = "The table " + matcher.group("tabName") + " does not exist in the database";
-			table = null;
+			computedTable = null;
 		}
 
 		return new Response(success, message, computedTable,
