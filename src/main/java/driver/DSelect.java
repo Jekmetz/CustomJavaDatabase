@@ -129,17 +129,18 @@ public class DSelect implements Driver {
 			if (where)
 			{
 				Integer compColIndex = colNames.indexOf(matcher.group("lhs"));
+				
 				if(compColIndex == -1) //If the lhs is not found...
-					return new Response(true,"The left hand side column does not exist in the table!",null);
+					return new Response(false,"The left hand side column does not exist in the table!",null);
 				
 				if(!matcher.group("rhs").equals("null"))	//If the right hand side is not null...
 				{
 					if(!typeOfString(matcher.group("rhs")).equals(colTypes.get(compColIndex))) //if the type of value does not match the type of column...
 						return new Response(false, "The type of value <" + colTypes.get(compColIndex) + "> does not match the value for the column given <" + typeOfString(matcher.group("rhs")) + ">!",null);
-				
-					if(!matcher.group("operator").equals("=") && !matcher.group("operator").equals("<>") && typeOfString(matcher.group("rhs")).equals("boolean"))
-						return new Response(false, "Cannot compare booleans with anything other than '=' or '<>'!",null);
 				}
+				
+				if(!matcher.group("operator").equals("=") && !matcher.group("operator").equals("<>") && (typeOfString(matcher.group("rhs")).equals("boolean") || colTypes.get(compColIndex).equals("boolean")))
+					return new Response(false, "Cannot compare booleans with anything other than '=' or '<>'!",null);
 			}
 			/**********/
 			

@@ -59,10 +59,7 @@ public class Console {
 					if(response.get("schema") != null) out.println("Schema:  " + response.get("schema"));
 					out.println();
 				}
-			}
-
-			
-			// TODO: Support tabular view, in a later module.
+			}	
 		}
 
 		in.close();
