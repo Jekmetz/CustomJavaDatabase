@@ -1,6 +1,7 @@
 package adt;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 public class HashMap<K,V> implements Map<K,V> {
 	//Initialize Vars
-	private static final long serialVersionUID = 1L;
+	//private static final long serialVersionUID = 1L;
 	private final int INITIAL_SIZE = 11;
 	private int size = 0;
 	private Object[] data = null;
@@ -28,13 +29,30 @@ public class HashMap<K,V> implements Map<K,V> {
 	public HashMap() {
 		data = new Object[INITIAL_SIZE];
 		for(int i = 0; i < INITIAL_SIZE; i++)
-			data[i] = new Node<Object>(new adt.Entry<K,V>(null));
+			data[i] = new Node<adt.Entry<K,V>>(new adt.Entry<K,V>(null));
 	
 		size = 0;
 	}
 	
-	public HashMap(Map<? extends K, ? extends V> copy) {
-		//super(copy);
+	@SuppressWarnings("unchecked")
+	public HashMap(Map<? extends K, ? extends V> copy) {	//FIXME: NoSuchMethodException for V HashMap<init>
+		data = new Object[copy.size()];
+		
+		{
+			Node<adt.Entry<K, V>> copyHead = null;
+			Node<adt.Entry<K, V>> copyCur = null;
+			for(int i = 0; i < copy.size(); i++)
+			{
+				copyHead = (Node<adt.Entry<K, V>>)((adt.HashMap<K,V>)copy).data[i];
+				copyCur = copyHead;
+				while(copyCur != null)
+				{
+					data[i] = new Node<adt.Entry<K, V>>(new adt.Entry<K, V>(copyCur.data.getKey(),copyCur.data.getValue())); 	//Put the data in
+					copyCur = copyCur.next;
+				}
+				
+			}
+		}
 	}
 	
 	
@@ -50,8 +68,8 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean containsKey(Object key) {
-		Node<Object> head = (Node<Object>)data[HashCode(key) % data.length];
-		Node<Object> cur = null;
+		Node<adt.Entry<K,V>> head = (Node<adt.Entry<K,V>>)data[Math.floorMod(HashCode(key),data.length)];
+		Node<adt.Entry<K,V>> cur = null;
 		boolean found = false;
 		
 		cur = head.next;
@@ -74,11 +92,11 @@ public class HashMap<K,V> implements Map<K,V> {
 		if(this.size() != 0)
 		{
 			{
-				Node<Object> head = null;
-				Node<Object> cur = null;
+				Node<adt.Entry<K,V>> head = null;
+				Node<adt.Entry<K,V>> cur = null;
 				for(int i = 0; ( i < data.length ) && ( !found ); i++)	//for all of the node heads....
 				{
-					head = (Node<Object>) data[i];
+					head = (Node<adt.Entry<K,V>>) data[i];
 					cur = head.next;
 					
 					while(( cur != null ) && ( !found ))
@@ -97,8 +115,8 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
-		Node<Object> head = (HashMap<K, V>.Node<Object>) data[HashCode(key) % data.length];
-		Node<Object> cur;
+		Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<adt.Entry<K,V>> cur;
 		boolean found = false;
 		V output = null;
 		
@@ -121,15 +139,40 @@ public class HashMap<K,V> implements Map<K,V> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public V put(K key, V value) {
-		// TODO Auto-generated method stub
-		return null;
+		Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<adt.Entry<K,V>> cur = head;
+		
+		while(cur.next != null)	//traverse the list until we are adding a node to the cur.next
+			cur = cur.next;
+		
+		cur.next = new Node<adt.Entry<K,V>>(new adt.Entry<K,V>(key,value));
+		
+		size++; //bump up the size
+		
+		return value;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public V remove(Object key) {
-		// TODO Auto-generated method stub
-		return null;
+		V value = null;
+		if(this.containsKey(key)) //If this contains the key to remove...
+		{
+			Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+			Node<adt.Entry<K,V>> cur = head;
+			
+			while(!((adt.Entry<K, V>)cur.next.data).getKey().equals(key))	//traverse the list until we are just before the one to remove
+				cur = cur.next;
+			
+			value = ((adt.Entry<K, V>)cur.next.data).getValue();
+			
+			cur.next = cur.next.next;	//set the curent node.next to the one after the removal one
+			cur.next.next = null;		//set the removal one.next equal to null to kill all references.
+			size--;
+		}
+		return value;
 	}
 
 	@Override
@@ -145,9 +188,26 @@ public class HashMap<K,V> implements Map<K,V> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Set<K> keySet() {
-		// TODO Auto-generated method stub
-		return null;
+		Set<K> output = new HashSet<K>();
+		
+		{
+			Node<adt.Entry<K,V>> head = null;
+			Node<adt.Entry<K,V>> cur = null;
+			for(int i = 0; ( i < data.length ); i++)	//for all of the node heads....
+			{
+				head = (Node<adt.Entry<K,V>>) data[i];
+				cur = head.next;
+				
+				while(cur != null)
+				{
+					output.add(((adt.Entry<K, V>)cur.data).getKey());
+				}
+			}
+		}
+		
+		return output;
 	}
 
 	@Override
@@ -183,6 +243,38 @@ public class HashMap<K,V> implements Map<K,V> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override
+	public String toString()
+	{
+		String output = "{";
+		Node<adt.Entry<K, V>> head = null;
+		Node<adt.Entry<K, V>> cur = null;
+		
+		
+		for(int i = 0; i < data.length; i++)
+		{
+			head = (Node<adt.Entry<K, V>>) data[i];
+			cur = head.next;
+			
+			if(cur != null)
+			{
+				while(cur != null)
+				{
+					output += cur.data.getKey() + "=";
+					output += cur.data.getValue() + ", ";
+					cur = cur.next;
+				}
+				output = output.substring(0,output.length() - 2) + ", ";
+		
+			}
+		}
+		
+		output = (output.length() > 2) ? output.substring(0,output.length() - 2) + "}" : "{}";
+		
+		return output;
+	}
+	
 	//Node class
 	class Node<T> {
 		private T data = null;
@@ -198,6 +290,11 @@ public class HashMap<K,V> implements Map<K,V> {
 		{
 			this.data = data;
 			this.next = ref;
+		}
+		@Override
+		public String toString()
+		{
+			return "D: " + data + "REF: " + next;
 		}
 	}
 }

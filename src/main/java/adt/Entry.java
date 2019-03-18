@@ -2,8 +2,8 @@ package adt;
 
 public class Entry<K,V> implements java.util.Map.Entry<K, V> {
 	//Init Vars
-	public K key = null;
-	public V value = null;
+	private K key = null;
+	private V value = null;
 	
 	//Constructors
 	public Entry(K key, V value)
