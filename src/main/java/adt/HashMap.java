@@ -1,10 +1,13 @@
 package adt;
 
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
 
 /** 
  * This is currently just an alias for a built-in
@@ -29,30 +32,14 @@ public class HashMap<K,V> implements Map<K,V> {
 	public HashMap() {
 		data = new Object[INITIAL_SIZE];
 		for(int i = 0; i < INITIAL_SIZE; i++)
-			data[i] = new Node<adt.Entry<K,V>>(new adt.Entry<K,V>(null));
+			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
 	
 		size = 0;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public HashMap(Map<? extends K, ? extends V> copy) {	//FIXME: NoSuchMethodException for V HashMap<init>
-		data = new Object[copy.size()];
-		
-		{
-			Node<adt.Entry<K, V>> copyHead = null;
-			Node<adt.Entry<K, V>> copyCur = null;
-			for(int i = 0; i < copy.size(); i++)
-			{
-				copyHead = (Node<adt.Entry<K, V>>)((adt.HashMap<K,V>)copy).data[i];
-				copyCur = copyHead;
-				while(copyCur != null)
-				{
-					data[i] = new Node<adt.Entry<K, V>>(new adt.Entry<K, V>(copyCur.data.getKey(),copyCur.data.getValue())); 	//Put the data in
-					copyCur = copyCur.next;
-				}
-				
-			}
-		}
+	public HashMap(Map<? extends K,? extends V> map) {
+		this();
+		this.putAll(map);
 	}
 	
 	
@@ -68,14 +55,14 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean containsKey(Object key) {
-		Node<adt.Entry<K,V>> head = (Node<adt.Entry<K,V>>)data[Math.floorMod(HashCode(key),data.length)];
-		Node<adt.Entry<K,V>> cur = null;
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>)data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> cur = null;
 		boolean found = false;
 		
 		cur = head.next;
 		while(( cur != null ) && ( !found ))	//while we are not at the end of the list and we have not found it...
 		{
-			if(((adt.Entry<K,V>)cur.data).getKey().equals(key))	//If the key is in that position...
+			if(((MapEntry<K,V>)cur.data).getKey().equals(key))	//If the key is in that position...
 				found = true;
 			
 			cur = cur.next;
@@ -92,16 +79,16 @@ public class HashMap<K,V> implements Map<K,V> {
 		if(this.size() != 0)
 		{
 			{
-				Node<adt.Entry<K,V>> head = null;
-				Node<adt.Entry<K,V>> cur = null;
+				Node<MapEntry<K,V>> head = null;
+				Node<MapEntry<K,V>> cur = null;
 				for(int i = 0; ( i < data.length ) && ( !found ); i++)	//for all of the node heads....
 				{
-					head = (Node<adt.Entry<K,V>>) data[i];
+					head = (Node<MapEntry<K,V>>) data[i];
 					cur = head.next;
 					
 					while(( cur != null ) && ( !found ))
 					{
-						if(((adt.Entry<K,V>)cur.data).getValue().equals(value))
+						if(((MapEntry<K,V>)cur.data).getValue().equals(value))
 							found = true;
 						cur = cur.next;
 					}
@@ -115,8 +102,8 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
-		Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
-		Node<adt.Entry<K,V>> cur;
+		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> cur;
 		boolean found = false;
 		V output = null;
 		
@@ -125,9 +112,9 @@ public class HashMap<K,V> implements Map<K,V> {
 			cur = head.next;
 			while(( cur != null ) && ( !found ))	//for all the items in the list and while it's not found...
 			{
-				if(((adt.Entry<K, V>)cur.data).getKey().equals(key))
+				if(((MapEntry<K, V>)cur.data).getKey().equals(key))
 				{
-					output = ((adt.Entry<K, V>)cur.data).getValue();
+					output = ((MapEntry<K, V>)cur.data).getValue();
 					found = true;
 				}
 				
@@ -141,44 +128,64 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V put(K key, V value) {
-		Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
-		Node<adt.Entry<K,V>> cur = head;
 		
-		while(cur.next != null)	//traverse the list until we are adding a node to the cur.next
+		//TODO: Implement cases where it is an update or a standard put
+		V output = this.get(key);	//Outputs the old value
+		boolean update = false;
+		
+		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> cur = head;
+		
+		while(cur.next != null && !update)	//traverse the list until we are adding a node to the cur.next
+		{
 			cur = cur.next;
+			
+			if (cur.data.getKey().equals(key))
+			{
+				update = true;
+			}
+		}
 		
-		cur.next = new Node<adt.Entry<K,V>>(new adt.Entry<K,V>(key,value));
-		
-		size++; //bump up the size
-		
-		return value;
+		if(update)	//If it is an update...
+		{
+			cur.data.setValue(value);
+		} else		//If it is not an update...
+		{
+			cur.next = new Node<MapEntry<K,V>>(new MapEntry<K,V>(key,value));
+			size++;
+		}
+			
+		return output;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public V remove(Object key) {
 		V value = null;
+		Node<MapEntry<K,V>> kill = null;
 		if(this.containsKey(key)) //If this contains the key to remove...
 		{
-			Node<adt.Entry<K,V>> head = (HashMap<K, V>.Node<adt.Entry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
-			Node<adt.Entry<K,V>> cur = head;
+			Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+			Node<MapEntry<K,V>> cur = head;
 			
-			while(!((adt.Entry<K, V>)cur.next.data).getKey().equals(key))	//traverse the list until we are just before the one to remove
+			while(!((MapEntry<K, V>)cur.next.data).getKey().equals(key))	//traverse the list until we are just before the one to remove
 				cur = cur.next;
 			
-			value = ((adt.Entry<K, V>)cur.next.data).getValue();
+			value = ((MapEntry<K, V>)cur.next.data).getValue();
 			
+			kill = cur.next;			//That is the one we want to obliterate
 			cur.next = cur.next.next;	//set the curent node.next to the one after the removal one
-			cur.next.next = null;		//set the removal one.next equal to null to kill all references.
+			kill.next = null;			//Make sure that the one we are killing is not pointing to anything
 			size--;
 		}
 		return value;
 	}
 
 	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
-		// TODO Auto-generated method stub
-		
+	public void putAll(Map<? extends K, ? extends V> map) {
+		for (Map.Entry<? extends K, ? extends V> e: map.entrySet()) {
+			this.put(e.getKey(), e.getValue());
+		}
 	}
 
 	@Override
@@ -188,38 +195,63 @@ public class HashMap<K,V> implements Map<K,V> {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public Set<K> keySet() {
-		Set<K> output = new HashSet<K>();
-		
-		{
-			Node<adt.Entry<K,V>> head = null;
-			Node<adt.Entry<K,V>> cur = null;
-			for(int i = 0; ( i < data.length ); i++)	//for all of the node heads....
-			{
-				head = (Node<adt.Entry<K,V>>) data[i];
-				cur = head.next;
-				
-				while(cur != null)
-				{
-					output.add(((adt.Entry<K, V>)cur.data).getKey());
-				}
+		return new AbstractSet<K>() {
+			@Override
+			public Iterator<K> iterator() {
+				return new ViewIterator<K>() {
+					@Override
+					public K next() {
+						return nextEntry().getKey();
+					}
+				};
 			}
-		}
-		
-		return output;
+
+			@Override
+			public int size() {
+				return HashMap.this.size();
+			}
+		};
 	}
 
 	@Override
 	public Collection<V> values() {
-		// TODO Auto-generated method stub
-		return null;
+		return new AbstractCollection<V>() {
+			@Override
+			public Iterator<V> iterator() {
+				return new ViewIterator<V>() {
+					@Override
+					public V next() {
+						return nextEntry().getValue();
+					}
+				};
+			}
+
+			@Override
+			public int size() {
+				return HashMap.this.size();
+			}
+		};
 	}
 
 	@Override
-	public Set<Entry<K, V>> entrySet() {
-		// TODO Auto-generated method stub
-		return null;
+	public Set<Map.Entry<K, V>> entrySet() {
+		return new AbstractSet<Map.Entry<K,V>>() {
+			@Override
+			public Iterator<Map.Entry<K, V>> iterator() {
+				return new ViewIterator<Map.Entry<K, V>>() {
+					@Override
+					public Map.Entry<K, V> next() {
+						return nextEntry();
+					}
+				};
+			}
+
+			@Override
+			public int size() {
+				return HashMap.this.size();
+			}
+		};
 	}
 
 	
@@ -248,13 +280,13 @@ public class HashMap<K,V> implements Map<K,V> {
 	public String toString()
 	{
 		String output = "{";
-		Node<adt.Entry<K, V>> head = null;
-		Node<adt.Entry<K, V>> cur = null;
+		Node<MapEntry<K, V>> head = null;
+		Node<MapEntry<K, V>> cur = null;
 		
 		
 		for(int i = 0; i < data.length; i++)
 		{
-			head = (Node<adt.Entry<K, V>>) data[i];
+			head = (Node<MapEntry<K, V>>) data[i];
 			cur = head.next;
 			
 			if(cur != null)
@@ -297,4 +329,79 @@ public class HashMap<K,V> implements Map<K,V> {
 			return "D: " + data + "REF: " + next;
 		}
 	}
+	
+	//ViewIterator class
+	private abstract class ViewIterator<T> implements Iterator<T> {
+		int index = 0;
+		int itemsViewed = 0;
+		@SuppressWarnings("unchecked")
+		Node<MapEntry<K,V>> cur = (HashMap<K, V>.Node<MapEntry<K, V>>) data[0];
+		
+		@Override
+		public boolean hasNext() {
+			return itemsViewed < HashMap.this.size();
+		}
+		
+		@SuppressWarnings("unchecked")
+		protected MapEntry<K,V> nextEntry() {
+			if(cur.next != null)	//If there is something left in the chain...
+			{
+				cur = cur.next;	
+			} else 					//If we need to move on to the next chain
+			{
+				boolean found = false;
+				while(!found)
+				{
+					index++;
+					if(((Node<MapEntry<K,V>>)data[index]).next != null)
+					{
+						found = true;
+						cur = ((Node<MapEntry<K,V>>)data[index]).next;
+					}
+				}
+			}
+			
+			itemsViewed++;	//Bump up the items viewed
+			return cur.data;
+		}
+	}
+	
+	//Entry Class
+	class MapEntry<A,B> implements java.util.Map.Entry<A, B> {
+		//Init Vars
+		private A key = null;
+		private B value = null;
+		
+		//Constructors
+		public MapEntry(A key, B value)
+		{
+			this.key = key;
+			this.value = value;
+		}
+		
+		public MapEntry(A key)
+		{
+			this.key = key;
+			this.value = null;
+		}
+		
+		//Implemented methods
+		@Override
+		public A getKey() {
+			return key;
+		}
+
+		@Override
+		public B getValue() {
+			return value;
+		}
+
+		@Override
+		public B setValue(B value) {
+			this.value = value;
+			return value;
+		}
+
+	}
+
 }
