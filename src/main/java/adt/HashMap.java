@@ -2,6 +2,7 @@ package adt;
 
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -23,15 +24,18 @@ public class HashMap<K,V> implements Map<K,V> {
 	//Initialize Vars
 	//private static final long serialVersionUID = 1L;
 	private final int INITIAL_SIZE = 11;
-	private int size = 0;
+	private int size = 0, alpha = 0;
 	private Object[] data = null;
+	private int[] arrLengths = {23,59,127,257,521,1049,2111,4229,8461,16879,33023,66271,104729,208049,416159,832189,1299827};
+	private int arrLengthIndex = 0;
+	boolean doAResizeMate = false;
 	//Constructors
 	/**
 	 * Constructor that creates new Node array with size INITIAL_SIZE
 	 */
 	public HashMap() {
 		data = new Object[INITIAL_SIZE];
-		for(int i = 0; i < INITIAL_SIZE; i++)
+		for(int i = 0; i < data.length; i++)
 			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
 	
 		size = 0;
@@ -102,7 +106,7 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
-		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
 		Node<MapEntry<K,V>> cur;
 		boolean found = false;
 		V output = null;
@@ -129,7 +133,9 @@ public class HashMap<K,V> implements Map<K,V> {
 	@SuppressWarnings("unchecked")
 	public V put(K key, V value) {
 		
-		//TODO: Implement cases where it is an update or a standard put
+		if(doAResizeMate)	//If we should do a resize...
+			resize();
+		
 		V output = this.get(key);	//Outputs the old value
 		boolean update = false;
 		
@@ -154,6 +160,8 @@ public class HashMap<K,V> implements Map<K,V> {
 			cur.next = new Node<MapEntry<K,V>>(new MapEntry<K,V>(key,value));
 			size++;
 		}
+		
+		doAResizeMate = calculateAlpha() >= 5;
 			
 		return output;
 	}
@@ -258,6 +266,8 @@ public class HashMap<K,V> implements Map<K,V> {
 	//Extra methods
 	private int HashCode(Object obj)
 	{
+		if(obj == null) return 0;
+		
 		if(obj.getClass().getSimpleName().equals("String"))	//If it is a string...
 		{
 			String str = (String) obj;
@@ -306,6 +316,47 @@ public class HashMap<K,V> implements Map<K,V> {
 		
 		return output;
 	}
+	
+	//Utility functions
+	private int calculateAlpha()
+	{
+		alpha = size/data.length;
+		return alpha;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void resize()
+	{
+		doAResizeMate = false;
+		Object[] temp = data;
+		data = (arrLengthIndex < arrLengths.length) ? new Object[arrLengths[arrLengthIndex]] : new Object[data.length*2+1];
+		arrLengthIndex++;
+		
+		//initialize data again...
+		for(int i = 0; i < data.length; i++)
+			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
+		
+		//Reset the size because we are going to rehash and put everything back...
+		size = 0;
+		
+		{
+			Node<MapEntry<K,V>> cur = null;
+			for(int i = 0; i < temp.length; i++) //for every chain in the array...
+			{
+				cur = (Node<MapEntry<K, V>>) temp[i];
+				
+				while (cur.next != null)	//for every element in the chain...
+				{
+					cur = cur.next;
+					this.put(cur.data.key,cur.data.value);
+				}
+			}
+		}
+		
+		Arrays.toString(data);
+	}
+	
+	public int getAlpha() { return alpha; }
 	
 	//Node class
 	class Node<T> {
