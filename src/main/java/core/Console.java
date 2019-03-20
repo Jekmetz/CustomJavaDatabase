@@ -88,8 +88,8 @@ public class Console {
 				output += "+" + repeatStr("-",tabWidth - 2) + "+\n"; //Add a tab to the front
 			} else //If there is a given table name...
 			{
-				output += "    " + repeatStr("_",tabName.length(),tabWidth) + "\n";
-				output += "   /" + tabName + "\\\n";
+				output += "    " + repeatStr("_",(tabName.length() < tabWidth - 5) ? tabName.length() : tabWidth - 5) + "\n";
+				output += "   /" + repeatStr(tabName,1,tabWidth-5) + "\\\n";
 				output += "+" + repeatStr("-",tabWidth - 2) + "+\n";
 			}
 			
