@@ -53,7 +53,7 @@ public class Server {
 
 	public List<Response> interpret(String script) {
 
-		String[] queries = script.split(";"); // Separate queries into an array
+		String[] queries = script.split(";\\n*"); // Separate queries into an array
 	
 		List<Response> responses = new LinkedList<Response>(); // Initialize responses
 
