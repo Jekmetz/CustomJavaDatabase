@@ -2,7 +2,6 @@ package adt;
 
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -285,6 +284,46 @@ public class HashMap<K,V> implements Map<K,V> {
 		}
 	}
 	
+	//Utility functions
+	private int calculateAlpha()
+	{
+		alpha = size/data.length;
+		return alpha;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void resize()
+	{
+		doAResizeMate = false;	//Set this global variable to false to not do another resize until next time
+		Object[] temp = data;
+		data = (arrLengthIndex < arrLengths.length) ? new Object[arrLengths[arrLengthIndex]] : new Object[data.length*2+1];
+		arrLengthIndex++;
+		
+		//initialize data again...
+		for(int i = 0; i < data.length; i++)
+			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
+		
+		//Reset the size because we are going to rehash and put everything back...
+		size = 0;
+		
+		{
+			Node<MapEntry<K,V>> cur = null;
+			for(int i = 0; i < temp.length; i++) //for every chain in the array...
+			{
+				cur = (Node<MapEntry<K, V>>) temp[i];
+				
+				while (cur.next != null)	//for every element in the chain...
+				{
+					cur = cur.next;
+					this.put(cur.data.key,cur.data.value);
+				}
+			}
+		}
+	}
+	
+	public int getAlpha() { return alpha; }
+	
+	//Object Overrides
 	@SuppressWarnings("unchecked")
 	@Override
 	public String toString()
@@ -317,46 +356,45 @@ public class HashMap<K,V> implements Map<K,V> {
 		return output;
 	}
 	
-	//Utility functions
-	private int calculateAlpha()
-	{
-		alpha = size/data.length;
-		return alpha;
-	}
-	
 	@SuppressWarnings("unchecked")
-	private void resize()
+	@Override
+	public boolean equals(Object a)
 	{
-		doAResizeMate = false;
-		Object[] temp = data;
-		data = (arrLengthIndex < arrLengths.length) ? new Object[arrLengths[arrLengthIndex]] : new Object[data.length*2+1];
-		arrLengthIndex++;
+		boolean output = false; //assume it to be false and prove it is true
 		
-		//initialize data again...
-		for(int i = 0; i < data.length; i++)
-			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
-		
-		//Reset the size because we are going to rehash and put everything back...
-		size = 0;
-		
+		if(a instanceof adt.HashMap)	//If a is an adt.HashMap...
 		{
-			Node<MapEntry<K,V>> cur = null;
-			for(int i = 0; i < temp.length; i++) //for every chain in the array...
+			adt.HashMap<K, V> copy = (adt.HashMap<K,V>)a; //If it has made it here, then it is an adt.HashMap
+			
+			if(this.size() == copy.size())	//If the sizes are the same...
 			{
-				cur = (Node<MapEntry<K, V>>) temp[i];
+				ViewIterator<MapEntry<K,V>> thisItr = this.viewIterator();
+				ViewIterator<MapEntry<K,V>> copyItr = copy.viewIterator();
 				
-				while (cur.next != null)	//for every element in the chain...
+				output = true; //set output to true until proven false at this point
+				
+				while (thisItr.hasNext() && output)
 				{
-					cur = cur.next;
-					this.put(cur.data.key,cur.data.value);
+					output = output && thisItr.next().equals(copyItr.next());	//make sure that all of the entries are the same
 				}
+				
 			}
 		}
 		
-		Arrays.toString(data);
+		return output;
 	}
 	
-	public int getAlpha() { return alpha; }
+	//Helpers
+	private ViewIterator<MapEntry<K,V>> viewIterator()
+	{
+		return new ViewIterator<MapEntry<K,V>>() 
+		{
+			public MapEntry<K,V> next()
+			{
+				return nextEntry();
+			}
+		};
+	}
 	
 	//Node class
 	class Node<T> {
@@ -395,25 +433,33 @@ public class HashMap<K,V> implements Map<K,V> {
 		
 		@SuppressWarnings("unchecked")
 		protected MapEntry<K,V> nextEntry() {
-			if(cur.next != null)	//If there is something left in the chain...
+			MapEntry<K,V> output = null;
+			if(index < data.length)	//If we have the ability to search
 			{
-				cur = cur.next;	
-			} else 					//If we need to move on to the next chain
-			{
-				boolean found = false;
-				while(!found)
+				if(cur.next != null)	//If there is something left in the chain...
 				{
-					index++;
-					if(((Node<MapEntry<K,V>>)data[index]).next != null)
+					cur = cur.next;	
+				} else 					//If we need to move on to the next chain
+				{
+					boolean found = false;
+					while(!found)
 					{
-						found = true;
-						cur = ((Node<MapEntry<K,V>>)data[index]).next;
+						index++;
+						if(((Node<MapEntry<K,V>>)data[index]).next != null)
+						{
+							found = true;
+							cur = ((Node<MapEntry<K,V>>)data[index]).next;
+						}
 					}
 				}
+				output = cur.data;
+			} else 	//If we do not have the ability to search
+			{
+				output = null;
 			}
 			
 			itemsViewed++;	//Bump up the items viewed
-			return cur.data;
+			return output;
 		}
 	}
 	
@@ -451,6 +497,26 @@ public class HashMap<K,V> implements Map<K,V> {
 		public B setValue(B value) {
 			this.value = value;
 			return value;
+		}
+		
+		@Override public String toString()
+		{
+			return "<" + this.key + "," + this.value + ">";
+		}
+		
+		@SuppressWarnings("unchecked")
+		@Override
+		public boolean equals(Object a)
+		{
+			boolean output = false; //Assume it to be false
+			
+			if(a instanceof MapEntry)
+			{
+				MapEntry<A,B> copy = (MapEntry<A,B>) a;
+				output = this.key.equals(copy.key) && this.value.equals(copy.value);
+			}
+			
+			return output;
 		}
 
 	}
