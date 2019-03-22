@@ -58,7 +58,7 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean containsKey(Object key) {
-		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>)data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>)data[Math.floorMod(localHash(key),data.length)];
 		Node<MapEntry<K,V>> cur = null;
 		boolean found = false;
 		
@@ -105,7 +105,7 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
-		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
 		Node<MapEntry<K,V>> cur;
 		boolean found = false;
 		V output = null;
@@ -138,7 +138,7 @@ public class HashMap<K,V> implements Map<K,V> {
 		V output = this.get(key);	//Outputs the old value
 		boolean update = false;
 		
-		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
 		Node<MapEntry<K,V>> cur = head;
 		
 		while(cur.next != null && !update)	//traverse the list until we are adding a node to the cur.next
@@ -172,7 +172,7 @@ public class HashMap<K,V> implements Map<K,V> {
 		Node<MapEntry<K,V>> kill = null;
 		if(this.containsKey(key)) //If this contains the key to remove...
 		{
-			Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(HashCode(key),data.length)];
+			Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
 			Node<MapEntry<K,V>> cur = head;
 			
 			while(!((MapEntry<K, V>)cur.next.data).getKey().equals(key))	//traverse the list until we are just before the one to remove
@@ -263,7 +263,7 @@ public class HashMap<K,V> implements Map<K,V> {
 
 	
 	//Extra methods
-	private int HashCode(Object obj)
+	private int localHash(Object obj)
 	{
 		if(obj == null) return 0;
 		
@@ -381,6 +381,17 @@ public class HashMap<K,V> implements Map<K,V> {
 			}
 		}
 		
+		return output;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		int output = 0;
+		for(Map.Entry<K, V> e : this.entrySet())
+		{
+			output += e.hashCode();
+		}
 		return output;
 	}
 	
@@ -517,6 +528,12 @@ public class HashMap<K,V> implements Map<K,V> {
 			}
 			
 			return output;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return (this.getKey()==null   ? 0 : this.getKey().hashCode()) ^ (this.getValue()==null ? 0 : this.getValue().hashCode());
 		}
 
 	}
