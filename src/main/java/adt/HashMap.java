@@ -22,24 +22,28 @@ import java.util.Set;
 public class HashMap<K,V> implements Map<K,V> {
 	//Initialize Vars
 	//private static final long serialVersionUID = 1L;
-	private final int INITIAL_SIZE = 11;
-	private int size = 0, alpha = 0;
-	private Object[] data = null;
+	private final int INITIAL_SIZE = 11;	//Initial size of Map
+	private int size = 0, alpha = 0;		//Hard coded size and Alpha
+	private Object[] data = null;			//data object
 	private int[] arrLengths = {23,59,127,257,521,1049,2111,4229,8461,16879,33023,66271,104729,208049,416159,832189,1299827};
-	private int arrLengthIndex = 0;
-	boolean doAResizeMate = false;
+	private int arrLengthIndex = 0;			//index deciding what prime resize length we are on
+	boolean doAResizeMate = false;			//flag determining whether or not to resize
 	//Constructors
 	/**
 	 * Constructor that creates new Node array with size INITIAL_SIZE
 	 */
 	public HashMap() {
 		data = new Object[INITIAL_SIZE];
-		for(int i = 0; i < data.length; i++)
-			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
+		for(int i = 0; i < data.length; i++)							//For every element in data...
+			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));	//Add a head node to it.
+		
+		//TODO: May have to just default as null and in the put method, if the slot is null, then put a head node in it. The post-ceding code after that is logically correct!
 	
-		size = 0;
+		size = 0;	//Redundant but helpful to see that the size is 0
 	}
-	
+	/**
+	 * Constructor that takes a map and puts all the elements in this HashMap
+	 */
 	public HashMap(Map<? extends K,? extends V> map) {
 		this();
 		this.putAll(map);
@@ -58,17 +62,17 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public boolean containsKey(Object key) {
-		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>)data[Math.floorMod(localHash(key),data.length)];
-		Node<MapEntry<K,V>> cur = null;
-		boolean found = false;
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>)data[Math.floorMod(localHash(key),data.length)];	//Head is the data element that will be accepting the new Entry
+		Node<MapEntry<K,V>> cur = null;	//Initialize cur
+		boolean found = false;			//flag to check if the key has been found
 		
-		cur = head.next;
+		cur = head.next;				//set cur to the next element past the head
 		while(( cur != null ) && ( !found ))	//while we are not at the end of the list and we have not found it...
 		{
 			if(((MapEntry<K,V>)cur.data).getKey().equals(key))	//If the key is in that position...
 				found = true;
 			
-			cur = cur.next;
+			cur = cur.next;	//increment the cur. If it was found, then it will be the one after the found key but that's okay because we don't have to use it!
 		}
 		
 		return found;
@@ -79,7 +83,7 @@ public class HashMap<K,V> implements Map<K,V> {
 	public boolean containsValue(Object value) {
 		boolean found = false;
 		
-		if(this.size() != 0)
+		if(this.size() != 0)	//If the array is not empty...
 		{
 			{
 				Node<MapEntry<K,V>> head = null;
@@ -105,23 +109,23 @@ public class HashMap<K,V> implements Map<K,V> {
 	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
-		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)]; //set the head to the element in which that object will fall...
 		Node<MapEntry<K,V>> cur;
 		boolean found = false;
 		V output = null;
 		
-		if(this.containsKey(key))	//If the key exists in the structure...
+		if(this.containsKey(key))	//If the key exists in the structure...	//could write the code for this myself again and modify to fit my needs but it is constant time so I don't care!
 		{
 			cur = head.next;
 			while(( cur != null ) && ( !found ))	//for all the items in the list and while it's not found...
 			{
-				if(((MapEntry<K, V>)cur.data).getKey().equals(key))
+				if(((MapEntry<K, V>)cur.data).getKey().equals(key))	//If we have found the node that has this key...
 				{
-					output = ((MapEntry<K, V>)cur.data).getValue();
-					found = true;
+					output = ((MapEntry<K, V>)cur.data).getValue();	//give it to me!
+					found = true;									//Stop the loop while you're at it!
 				}
 				
-				cur = cur.next;
+				cur = cur.next;	//Increment cur
 			}
 		}
 		
@@ -133,15 +137,15 @@ public class HashMap<K,V> implements Map<K,V> {
 	public V put(K key, V value) {
 		
 		if(doAResizeMate)	//If we should do a resize...
-			resize();
+			resize();		//resize!
 		
 		V output = this.get(key);	//Outputs the old value
-		boolean update = false;
+		boolean update = false;		//is it an update?
 		
 		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
 		Node<MapEntry<K,V>> cur = head;
 		
-		while(cur.next != null && !update)	//traverse the list until we are adding a node to the cur.next
+		while(cur.next != null && !update)	//traverse the list until we are adding a node to the cur.next or we have determined that it is an update!
 		{
 			cur = cur.next;
 			
@@ -160,7 +164,7 @@ public class HashMap<K,V> implements Map<K,V> {
 			size++;
 		}
 		
-		doAResizeMate = calculateAlpha() >= 5;
+		doAResizeMate = calculateAlpha() >= 5; //Calculate alpha every time
 			
 		return output;
 	}
@@ -197,19 +201,26 @@ public class HashMap<K,V> implements Map<K,V> {
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
+		data = new Object[INITIAL_SIZE];
+		for(int i = 0; i < data.length; i++)	//Just replace everything with a head
+			data[i] = new Node<MapEntry<K,V>>(new MapEntry<K,V>(null));
 		
+		//ReInitialize Variables
+		size = 0;
+		alpha = 0;
+		arrLengthIndex = 0;
+		doAResizeMate = false;
 	}
 
 	@Override
 	public Set<K> keySet() {
-		return new AbstractSet<K>() {
+		return new AbstractSet<K>() {				//Abstract set needs iterator()
 			@Override
-			public Iterator<K> iterator() {
-				return new ViewIterator<K>() {
+			public Iterator<K> iterator() {			//iterator() returns a ViewIterator	
+				return new ViewIterator<K>() {		//ViewIterator needs to define the next() method
 					@Override
 					public K next() {
-						return nextEntry().getKey();
+						return nextEntry().getKey();//next() returns the key
 					}
 				};
 			}
@@ -269,15 +280,15 @@ public class HashMap<K,V> implements Map<K,V> {
 		
 		if(obj.getClass().getSimpleName().equals("String"))	//If it is a string...
 		{
-			String str = (String) obj;
+			String str = (String) obj;						//cast obj to string...
 			Random random = null;
 			double seed = 0;
 			
-			for(int i = 0; i < str.length(); i++)
-				seed += Math.pow(str.charAt(i),str.length() - i);
+			for(int i = 0; i < str.length(); i++)					//for the length of the string...
+				seed += Math.pow(str.charAt(i),str.length() - i);	//add the reversing index'th power of the ascii value of the character to the seed
 			
-			random = new Random((int)(seed % Integer.MAX_VALUE));
-			return (int) random.nextLong();
+			random = new Random((int)(seed % Integer.MAX_VALUE));	//Use that seed for the random number generator
+			return (int) random.nextLong();							//cast random long to int
 		} else	//If it is not a string
 		{
 			return obj.hashCode();
@@ -287,8 +298,8 @@ public class HashMap<K,V> implements Map<K,V> {
 	//Utility functions
 	private int calculateAlpha()
 	{
-		alpha = size/data.length;
-		return alpha;
+		alpha = size/data.length;	//Mutate alpha
+		return alpha;				//return that value
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -308,9 +319,9 @@ public class HashMap<K,V> implements Map<K,V> {
 		
 		{
 			Node<MapEntry<K,V>> cur = null;
-			for(int i = 0; i < temp.length; i++) //for every chain in the array...
+			for(int i = 0; i < temp.length; i++) 		//for every chain in the array...
 			{
-				cur = (Node<MapEntry<K, V>>) temp[i];
+				cur = (Node<MapEntry<K, V>>) temp[i];	//cur is the next head node
 				
 				while (cur.next != null)	//for every element in the chain...
 				{
@@ -333,21 +344,20 @@ public class HashMap<K,V> implements Map<K,V> {
 		Node<MapEntry<K, V>> cur = null;
 		
 		
-		for(int i = 0; i < data.length; i++)
+		for(int i = 0; i < data.length; i++)		//for all the indexes in data
 		{
-			head = (Node<MapEntry<K, V>>) data[i];
-			cur = head.next;
+			head = (Node<MapEntry<K, V>>) data[i];	//set the head for that element
+			cur = head.next;						//set cur to the first good one
 			
-			if(cur != null)
+			if(cur != null)	//If the first good element is not null...
 			{
-				while(cur != null)
+				while(cur != null)	//While we have not reached the end of the chain
 				{
 					output += cur.data.getKey() + "=";
 					output += cur.data.getValue() + ", ";
 					cur = cur.next;
 				}
 				output = output.substring(0,output.length() - 2) + ", ";
-		
 			}
 		}
 		
