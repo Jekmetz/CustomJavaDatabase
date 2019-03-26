@@ -55,9 +55,7 @@ public class HashMap<K,V> implements Map<K,V> {
 	public int size() { return size; }
 
 	@Override
-	public boolean isEmpty() {
-		return size == 0;
-	}
+	public boolean isEmpty() { return size == 0;}
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -142,7 +140,7 @@ public class HashMap<K,V> implements Map<K,V> {
 		V output = this.get(key);	//Outputs the old value
 		boolean update = false;		//is it an update?
 		
-		Node<MapEntry<K,V>> head = (HashMap<K, V>.Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
+		Node<MapEntry<K,V>> head = (Node<MapEntry<K,V>>) data[Math.floorMod(localHash(key),data.length)];
 		Node<MapEntry<K,V>> cur = head;
 		
 		while(cur.next != null && !update)	//traverse the list until we are adding a node to the cur.next or we have determined that it is an update!
@@ -436,7 +434,7 @@ public class HashMap<K,V> implements Map<K,V> {
 		@Override
 		public String toString()
 		{
-			return "D: " + data + "REF: " + next;
+			return "D: " + data + "\nREF: " + next;
 		}
 	}
 	
@@ -505,14 +503,10 @@ public class HashMap<K,V> implements Map<K,V> {
 		
 		//Implemented methods
 		@Override
-		public A getKey() {
-			return key;
-		}
+		public A getKey() { return key; }
 
 		@Override
-		public B getValue() {
-			return value;
-		}
+		public B getValue() { return value;	}
 
 		@Override
 		public B setValue(B value) {
@@ -520,7 +514,8 @@ public class HashMap<K,V> implements Map<K,V> {
 			return value;
 		}
 		
-		@Override public String toString()
+		@Override 
+		public String toString()
 		{
 			return "<" + this.key + "," + this.value + ">";
 		}
@@ -543,7 +538,7 @@ public class HashMap<K,V> implements Map<K,V> {
 		@Override
 		public int hashCode()
 		{
-			return (this.getKey()==null   ? 0 : this.getKey().hashCode()) ^ (this.getValue()==null ? 0 : this.getValue().hashCode());
+			return (this.getKey()==null   ? 0 : localHash(this.getKey())) ^ (this.getValue()==null ? 0 : localHash(this.getValue()));
 		}
 
 	}
