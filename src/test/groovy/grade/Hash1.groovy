@@ -33,18 +33,11 @@ public class Hash1 {
 			test = {method, ...args ->
 				final call = "$method(${args ? args.inspect()[1..-2] : ''})"
 				dynamicTest(call, {
-					try {
-						assertEquals(
-							exemplar."$method"(*args),
-							subject."$method"(*args),
-							"$call must return correct results"
-						)
-					}
-					catch (Exception e) {
-						fail(
-							"$call must not throw exception"
-						)
-					}
+					assertEquals(
+						exemplar."$method"(*args),
+						subject."$method"(*args),
+						"$call must return correct results"
+					)
 					successes++
 				})
 			}
