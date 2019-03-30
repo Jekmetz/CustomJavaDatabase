@@ -1,5 +1,9 @@
 package driver;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -19,7 +23,8 @@ public class DExport implements Driver{
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-			"EXPORT\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)",
+			//EXPORT\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\s+(?:TO\s+(?<fileName>[a-zA-Z][a-zA-Z0-9_-]*)\.|AS\s+)(?<fileType>XML|JSON)
+			"EXPORT\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)\\s+(?:TO\\s+(?<fileName>[a-zA-Z][a-zA-Z0-9_-]*)\\.|AS\\s+)(?<fileType>XML|JSON)",
 			Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -57,95 +62,116 @@ public class DExport implements Driver{
 			List<String> colTypes = table.getSchema().getStringList("column_types");
 			Set<Object> primaryKeys = table.keySet();
 			
-			//Overarching structures
-			JsonObjectBuilder jsonObjBuilder = Json.createObjectBuilder();
-			JsonObject jsonObj = null;
-			
-			//Necessary Array Builders
-			JsonArrayBuilder colNamesArrayBuilder = Json.createArrayBuilder();
-			JsonArrayBuilder colTypesArrayBuilder = Json.createArrayBuilder();
-			JsonArrayBuilder primaryKeysArrayBuilder = Json.createArrayBuilder();
-			JsonArrayBuilder dataArrayBuilder = Json.createArrayBuilder();
-			
-			//colNamesArrayBuilder
-			for(String colName : colNames)
-				colNamesArrayBuilder.add(colName);
-			
-			//colTypesArrayBuilder
-			for(String colType : colTypes)
-				colTypesArrayBuilder.add(colType);
-			
-			//primaryKeysArrayBuilder & dataArrayBuilder
-			for(Object key : primaryKeys)
+			if(matcher.group("fileType").toLowerCase().equals("json"))	//If we are putting this thing into a json file...
 			{
-				/*PRIMARY KEYS ARRAY BUILDER*/
-				switch(colTypes.get(primaryIndex))
+				//Overarching structures
+				JsonObjectBuilder jsonObjBuilder = Json.createObjectBuilder();
+				JsonObject jsonObj = null;
+				
+				//Necessary Array Builders
+				JsonArrayBuilder colNamesArrayBuilder = Json.createArrayBuilder();
+				JsonArrayBuilder colTypesArrayBuilder = Json.createArrayBuilder();
+				JsonArrayBuilder primaryKeysArrayBuilder = Json.createArrayBuilder();
+				JsonArrayBuilder dataArrayBuilder = Json.createArrayBuilder();
+				
+				//colNamesArrayBuilder
+				for(String colName : colNames)
+					colNamesArrayBuilder.add(colName);
+				
+				//colTypesArrayBuilder
+				for(String colType : colTypes)
+					colTypesArrayBuilder.add(colType);
+				
+				//primaryKeysArrayBuilder & dataArrayBuilder
+				for(Object key : primaryKeys)
 				{
-				case "string":
-					primaryKeysArrayBuilder.add(key.toString());
-					break;
-					
-				case "integer":
-					primaryKeysArrayBuilder.add(Integer.parseInt(key.toString()));
-					break;
-					
-				case "boolean":
-					primaryKeysArrayBuilder.add(Boolean.parseBoolean(key.toString()));
-					break;
-					
-				default:
-					primaryKeysArrayBuilder.add("error: key type not string, integer, or boolean");
-					break;
-				}
-				/*****************/
-
-				Row row = table.get(key);
-				/*dataArrayBuilder*/
-				for(int i = 0; i < colTypes.size(); i++)	//For the length of the coltypes and rows...
-				{
-					String type = colTypes.get(i);
-					
-					System.out.println("ROW: " + row + "\nTYPES: " + colTypes + "\ni: " + i + "\n");
-					
-					JsonArrayBuilder subRow = Json.createArrayBuilder();
-					
-					switch(type)
+					/*PRIMARY KEYS ARRAY BUILDER*/
+					switch(colTypes.get(primaryIndex))
 					{
 					case "string":
-						subRow.add(row.get(i).toString());
+						primaryKeysArrayBuilder.add(key.toString());
+						break;
 						
 					case "integer":
-						subRow.add(Integer.parseInt(row.get(i).toString()));
+						primaryKeysArrayBuilder.add(Integer.parseInt(key.toString()));
 						break;
 						
 					case "boolean":
-						subRow.add(Boolean.parseBoolean(row.get(i).toString()));
+						primaryKeysArrayBuilder.add(Boolean.parseBoolean(key.toString()));
 						break;
 						
 					default:
-						subRow.add("error: addToDataArrayBuilderProblem");
+						primaryKeysArrayBuilder.add("error: key type not string, integer, or boolean");
 						break;
 					}
-					
+					/*****************/
+	
+					Row row = table.get(key);
+					JsonArrayBuilder subRow = Json.createArrayBuilder();
+					/*dataArrayBuilder*/
+					for(int i = 0; i < colTypes.size(); i++)	//For the length of the coltypes and rows...
+					{
+						String type = colTypes.get(i);
+						
+						switch(type)
+						{
+						case "string":
+							subRow.add(row.get(i).toString());
+							break;
+							
+						case "integer":
+							subRow.add(Integer.parseInt(row.get(i).toString()));
+							break;
+							
+						case "boolean":
+							subRow.add(Boolean.parseBoolean(row.get(i).toString()));
+							break;
+							
+						default:
+							subRow.add("error: addToDataArrayBuilderProblem");
+							break;
+						}
+					}
 					dataArrayBuilder.add(subRow);
+					/******************/
 				}
-				/******************/
+				
+				/*BUILD JSON*/
+				jsonObj = jsonObjBuilder
+				.add("schema",Json.createObjectBuilder()
+						.add("primary_index", primaryIndex)
+						.add("table_name", tabName)
+						.add("column_names", colNamesArrayBuilder)
+						.add("column_types", colTypesArrayBuilder))
+				.add("data", Json.createObjectBuilder()
+						.add("primary_keys", primaryKeysArrayBuilder)
+						.add("data", dataArrayBuilder)
+				).build();
+				
+				try {
+					//Make sure that the json directory exists!
+					String dir = System.getProperty("user.dir") + "\\json";
+					new File(dir).mkdir();
+					//Put the file in that directory!
+					File file = new File(dir + "\\" + matcher.group("fileName") + ".json");
+					file.createNewFile();
+					//Write into that file!
+					FileWriter fw = new FileWriter(file);
+					fw.write(jsonObj.toString());
+					//Close that file!
+					fw.close();
+				}catch(FileNotFoundException e)
+				{
+					return new Response(false,"Error initializing file creation!",null);
+				} catch (IOException e) {
+					return new Response(false, "Error creating the file: '" + matcher.group("fileName") + ".json'!",null);
+				}
+			} else //If we are putting this thing into an xml file...
+			{
+				/*
+				 * MAKE XML FILE!
+				 */
 			}
-			
-			/*BUILD JSON*/
-			jsonObj = jsonObjBuilder
-			.add("schema",Json.createObjectBuilder()
-					.add("primary_index", primaryIndex)
-					.add("table_name", tabName)
-					.add("column_names", colNamesArrayBuilder)
-					.add("column_types", colTypesArrayBuilder))
-			.add("data", Json.createObjectBuilder()
-					.add("primary_keys", primaryKeysArrayBuilder)
-					.add("data", dataArrayBuilder)
-			).build();
-			
-			System.out.println(jsonObj.toString());
-			
 		} else //If the table does not exist in the database
 		{
 			return new Response(false, "The table does not exist in the database!", null);
