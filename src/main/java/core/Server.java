@@ -44,6 +44,7 @@ public class Server {
 		drivers.add( new DAlterDrop()        );
 		drivers.add( new DSelect()           );
 		drivers.add(new DExport()            );
+		drivers.add(new DImport()            );
 		// drivers.add(new DRange());
 		// drivers.add(new DTable());
 	}

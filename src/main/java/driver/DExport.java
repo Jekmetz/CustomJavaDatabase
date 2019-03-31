@@ -28,23 +28,6 @@ public class DExport implements Driver{
 			Pattern.CASE_INSENSITIVE
 		);
 	}
-
-	/*EXAMPLE:
-	 * 	{
-	 * 		"schema" : 
-	 * 			{
-	 * 				"primary_index" : 1,
-	 * 				"table_name"    : "tabName",
-	 * 				"column_names"	: ["s","pi","b"],
-	 * 				"column_types"  : ["string","integer","boolean"]
-	 * 			},
-	 * 		"data" :
-	 * 			{
-	 * 				"primary_keys" : [1,2,3,4],
-	 * 				"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
-	 * 			}
-	 * 	}
-	 */
 	
 	@Override
 	public Response execute(Database db, String query) 
@@ -56,7 +39,6 @@ public class DExport implements Driver{
 		{
 			//Init vars
 			Table table = db.get(matcher.group("tabName"));
-			String tabName = matcher.group("tabName");
 			Integer primaryIndex = table.getSchema().getInteger("primary_index");
 			List<String> colNames = table.getSchema().getStringList("column_names");
 			List<String> colTypes = table.getSchema().getStringList("column_types");
@@ -64,6 +46,21 @@ public class DExport implements Driver{
 			
 			if(matcher.group("fileType").toLowerCase().equals("json"))	//If we are putting this thing into a json file...
 			{
+				/*EXAMPLE:
+				 * 	{
+				 * 		"schema" : 
+				 * 			{
+				 * 				"primary_index" : 1,
+				 * 				"column_names"	: ["s","pi","b"],
+				 * 				"column_types"  : ["string","integer","boolean"]
+				 * 			},
+				 * 		"data" :
+				 * 			{
+				 * 				"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
+				 * 			}
+				 * 	}
+				 */
+				
 				//Overarching structures
 				JsonObjectBuilder jsonObjBuilder = Json.createObjectBuilder();
 				JsonObject jsonObj = null;
@@ -71,7 +68,6 @@ public class DExport implements Driver{
 				//Necessary Array Builders
 				JsonArrayBuilder colNamesArrayBuilder = Json.createArrayBuilder();
 				JsonArrayBuilder colTypesArrayBuilder = Json.createArrayBuilder();
-				JsonArrayBuilder primaryKeysArrayBuilder = Json.createArrayBuilder();
 				JsonArrayBuilder dataArrayBuilder = Json.createArrayBuilder();
 				
 				//colNamesArrayBuilder
@@ -85,27 +81,6 @@ public class DExport implements Driver{
 				//primaryKeysArrayBuilder & dataArrayBuilder
 				for(Object key : primaryKeys)
 				{
-					/*PRIMARY KEYS ARRAY BUILDER*/
-					switch(colTypes.get(primaryIndex))
-					{
-					case "string":
-						primaryKeysArrayBuilder.add(key.toString());
-						break;
-						
-					case "integer":
-						primaryKeysArrayBuilder.add(Integer.parseInt(key.toString()));
-						break;
-						
-					case "boolean":
-						primaryKeysArrayBuilder.add(Boolean.parseBoolean(key.toString()));
-						break;
-						
-					default:
-						primaryKeysArrayBuilder.add("error: key type not string, integer, or boolean");
-						break;
-					}
-					/*****************/
-	
 					Row row = table.get(key);
 					JsonArrayBuilder subRow = Json.createArrayBuilder();
 					/*dataArrayBuilder*/
@@ -140,11 +115,9 @@ public class DExport implements Driver{
 				jsonObj = jsonObjBuilder
 				.add("schema",Json.createObjectBuilder()
 						.add("primary_index", primaryIndex)
-						.add("table_name", tabName)
 						.add("column_names", colNamesArrayBuilder)
 						.add("column_types", colTypesArrayBuilder))
 				.add("data", Json.createObjectBuilder()
-						.add("primary_keys", primaryKeysArrayBuilder)
 						.add("data", dataArrayBuilder)
 				).build();
 				
@@ -153,7 +126,7 @@ public class DExport implements Driver{
 					String dir = System.getProperty("user.dir") + "\\json";
 					new File(dir).mkdir();
 					//Put the file in that directory!
-					File file = new File(dir + "\\" + matcher.group("fileName") + ".json");
+					File file = new File(dir + "\\" + (matcher.group("fileName")!=null ? matcher.group("fileName") : matcher.group("tabName")) + ".json");
 					file.createNewFile();
 					//Write into that file!
 					FileWriter fw = new FileWriter(file);
