@@ -12,6 +12,11 @@ public class Hash1 {
 				 RNG_SEED		= 2019_01,
 				 KEY_ALPHABET	= 'abcde1234_'
 	
+	static final CALL_LOGGER = System.out
+	// DO NOT LOG MAP CALLS:   null
+	// LOG CALLS TO CONSOLE:   System.out
+	// LOG CALLS TO FILE:	   new PrintStream("h1.txt")
+	
 	static successes = 0
 	
 	@DisplayName('Canonical Battery')
@@ -33,6 +38,7 @@ public class Hash1 {
 			test = {method, ...args ->
 				final call = "$method(${args ? args.inspect()[1..-2] : ''})"
 				dynamicTest(call, {
+					CALL_LOGGER?.println("map.$call;".replace("'", '"'))
 					assertEquals(
 						exemplar."$method"(*args),
 						subject."$method"(*args),
@@ -41,7 +47,8 @@ public class Hash1 {
 					successes++
 				})
 			}
-			
+		
+		CALL_LOGGER?.println("Map map = new adt.HashMap();")
 		rng.doubles(MAP_OPERATIONS).mapToObj({ p -> 
 			if      (p < 0.01) test('isEmpty')
 			else if (p < 0.05) test('size')
