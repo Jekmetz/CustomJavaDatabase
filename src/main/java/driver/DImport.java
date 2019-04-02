@@ -22,8 +22,8 @@ public class DImport implements Driver{
 	private static final Pattern pattern;
 	static {
 		pattern = Pattern.compile(
-			//IMPORT\s+(?<fileName>[a-zA-Z][a-zA-Z0-9_\-]*)\.(?<fileType>xml|json)\s+TO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)
-			"IMPORT\\s+(?<fileName>[a-zA-Z][a-zA-Z0-9_\\-]*)\\.(?<fileType>xml|json)\\s+TO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)",
+			//IMPORT\s+((?<fileName>[a-zA-Z][a-zA-Z0-9_\-]*)\.(?<fileType>xml|json)\s+TO\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)|(?<options>OPTIONS))
+			"IMPORT\\s+((?<fileName>[a-zA-Z][a-zA-Z0-9_\\-]*)\\.(?<fileType>xml|json)\\s+TO\\s+(?<tabName>[a-zA-Z][a-zA-Z0-9_]*)|(?<options>OPTIONS))",
 			Pattern.CASE_INSENSITIVE
 		);
 	}
@@ -43,13 +43,11 @@ public class DImport implements Driver{
 			 * 		"schema" : 
 			 * 			{
 			 * 				"primary_index" : 1,
-			 * 				"table_name"    : "tabName",
 			 * 				"column_names"	: ["s","pi","b"],
 			 * 				"column_types"  : ["string","integer","boolean"]
 			 * 			},
 			 * 		"data" :
 			 * 			{
-			 * 				"primary_keys" : [1,2,3,4],
 			 * 				"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
 			 * 			}
 			 * 	}
