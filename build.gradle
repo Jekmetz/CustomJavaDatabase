@@ -9,7 +9,7 @@ sourceCompatibility = 1.8
 
 dependencies {
 	compile 'org.codehaus.groovy:groovy:3.0.0-alpha-4'
-	testCompileOnly 'junit:junit:4.12'
+	testCompileOnly 'junit:junit:4.12' // Reaser's TODO: deprecate
 	testImplementation (
 		'org.junit.jupiter:junit-jupiter-api:5.3.2',
 		'org.junit.jupiter:junit-jupiter-params:5.3.2',
@@ -19,8 +19,9 @@ dependencies {
 		'org.junit.vintage:junit-vintage-engine:5.3.2'
 	)
 	compile 'javax.xml.bind:jaxb-api:2.3.1'
-	compile 'org.glassfish:javax.json:1.1.4'
+	runtime 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
 	compile 'javax.json:javax.json-api:1.1.4'
+	runtime 'org.glassfish:javax.json:1.1.4'
 	testCompile	'org.apache.commons:commons-math3:3.6.1'
 }
 
