@@ -1,6 +1,6 @@
 package adt;
 
-import adt.HashMap;
+import javax.xml.bind.annotation.*;
 
 /** 
  * This class is a hash map alias providing
@@ -8,6 +8,7 @@ import adt.HashMap;
  * 
  * Additional features may be implemented.
  */
+@XmlRootElement
 public class Table extends HashMap<Object, Row> implements Cloneable{
 	private static final long serialVersionUID = 1L;
 	
@@ -15,6 +16,7 @@ public class Table extends HashMap<Object, Row> implements Cloneable{
 	private Schema schema;
 	
 	/** Do not modify. **/
+	@XmlElement(name="schema")
 	public Schema getSchema() {
 		return schema;
 	}

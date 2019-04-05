@@ -13,11 +13,15 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import adt.Database;
 import adt.Response;
 import adt.Row;
 import adt.Table;
+import adt.XmlFriendlyTable;
 
 public class DExport implements Driver{
 	private static final Pattern pattern;
@@ -141,9 +145,7 @@ public class DExport implements Driver{
 				}
 			} else //If we are putting this thing into an xml file...
 			{
-				/*
-				 * MAKE XML FILE!
-				 */
+				marshall(new XmlFriendlyTable(db.get(matcher.group("tabName"))),(matcher.group("fileName") != null) ? matcher.group("fileName") : matcher.group("tabName"));
 			}
 		} else //If the table does not exist in the database
 		{
@@ -152,4 +154,19 @@ public class DExport implements Driver{
 		
 		return new Response(true,"File Exported Successfully",null);
 	}
+	
+	public void marshall(XmlFriendlyTable object,String filename) {
+		try {
+			Marshaller marshaller = JAXBContext.newInstance(XmlFriendlyTable.class).createMarshaller();
+		    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+		    
+		    new File(System.getProperty("user.dir") + "\\xml").mkdir();
+		    
+		    marshaller.marshal(object, new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
+		} 
+		catch (JAXBException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

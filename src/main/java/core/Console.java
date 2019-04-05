@@ -65,7 +65,7 @@ public class Console {
 		in.close();
 	}
 	
-	private static String formatResponse(Table table)
+	public static String formatResponse(Table table)
 	{
 		String output = "";
 		if (table == null)

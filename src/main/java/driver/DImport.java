@@ -12,11 +12,15 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import adt.Database;
 import adt.Response;
 import adt.Row;
 import adt.Table;
+import adt.XmlFriendlyTable;
 
 public class DImport implements Driver{
 	private static final Pattern pattern;
@@ -35,6 +39,8 @@ public class DImport implements Driver{
 		if(!matcher.matches()) return null;
 		
 		Table table = null;
+		
+		if(db.containsKey(matcher.group("tabName"))) return new Response(false, "The table '" + matcher.group("tabName") + "' already exists in the database!",null);
 		
 		if(matcher.group("fileType").toLowerCase().equals("json"))	//If we are reading in json...
 		{
@@ -153,8 +159,21 @@ public class DImport implements Driver{
 			
 		} else // If we are reading in xml...
 		{
-			
+			table = unmarshall(matcher.group("fileName")).buildTable();
+			db.put(matcher.group("tabName"), table);
 		}
 		return new Response(true, "File Imported Successfully!", table);
+	}
+	
+	public XmlFriendlyTable unmarshall(String filename) {
+		XmlFriendlyTable result = null;
+		try {
+			Unmarshaller unmarshaller = JAXBContext.newInstance(XmlFriendlyTable.class).createUnmarshaller();
+			result = (XmlFriendlyTable) unmarshaller.unmarshal(new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
+		} 
+		catch (JAXBException e) {
+			e.printStackTrace();
+		}
+		return result;
 	}
 }
