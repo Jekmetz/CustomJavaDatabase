@@ -60,9 +60,11 @@ public class Hash2 {
 					"$call must return correct results"
 				)
 			}
+			
+		def skip = false
 		
 		CALL_LOGGER?.println("Map map = new adt.HashMap();")
-		IntStream.rangeClosed(1, MAP_OPERATIONS).filter({n -> n % PLOT_INTERVAL == 0}).mapToObj({ upto -> 
+		IntStream.rangeClosed(1, MAP_OPERATIONS).filter({n -> n % PLOT_INTERVAL == 0 && !skip}).mapToObj({ upto -> 
 			dynamicTest(String.format("%,d ops [%s]", upto, upto >= SKIP_BEFORE ? 'correctness, analysis' : 'correctness only'), {
 				final started = System.nanoTime()
 				
@@ -83,19 +85,26 @@ public class Hash2 {
 				final slope = plot.getSlope()
 				final alpha = plot.getSignificance()
 				
-				System.out.printf(String.format(
-					"%,7d ops: %,.3f ms/op, slope %.3f, alpha %.3f\n",
+				final report = String.format(
+					"%,8d ops: %,8.3f ms/op %8.3f slope %8.3f alpha\n",
 					upto,
 					average / 1_000,
 					slope,
 					alpha
-				))
-				
-				if (upto >= SKIP_BEFORE)
-					assertTrue(
-						slope <= SLOPE_BOUND,
-						"slope $slope of average runtime plot must not exceed bound $SLOPE_BOUND"
+				)
+				if (upto < SKIP_BEFORE || slope <= SLOPE_BOUND) {
+					System.out.printf(report)
+				}
+				else {
+					System.err.printf(report)
+					skip = true
+					fail(String.format(
+						"Average runtime slope %.3f exceeds %.3f bound, all remaining tests will be skipped",
+							slope,
+							SLOPE_BOUND
+						)
 					)
+				}
 
 				milestones++
 			})
