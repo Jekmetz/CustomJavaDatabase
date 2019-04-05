@@ -25,15 +25,12 @@ public class TypedElement {
 	}
 	
 	@XmlAttribute
-	public String getType() {
-		return type; }
+	public String getType() { return type; }
 	
 	public void setType(String type) { this.type = type; }
 	
 	@XmlElement
-	public String getData() {
-		return data.toString();
-	}
+	public String getData() { return data.toString(); }
 	
 	public void setData(String data) {
 		if (type.equals("string"))
