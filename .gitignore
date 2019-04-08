@@ -12,3 +12,4 @@
 *.xml
 Tester.*
 /lib/
+*.ps1

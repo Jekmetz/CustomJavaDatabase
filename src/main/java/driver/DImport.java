@@ -20,6 +20,7 @@ import adt.Database;
 import adt.Response;
 import adt.Row;
 import adt.Table;
+import adt.Utility;
 import adt.XmlFriendlyTable;
 
 public class DImport implements Driver{
@@ -131,15 +132,15 @@ public class DImport implements Driver{
 				
 				for(int j = 0; j < rowJson.size(); j++)
 				{
-					System.out.println(rowJson.get(j) + ": " + rowJson.get(j).toString().equals(":;null;:"));
-					if(rowJson.get(j).toString().equals(":;null;:"))
+					String dataStr = (rowJson.get(j).toString().length() < 3) ? "" : Utility.stripFL(rowJson.get(j).toString());
+					if(dataStr.equals(":;null;:"))
 						row.add(null);
 					else	//If rowJson is supposed to be null
 					{
 						switch(colTypes.get(j))
 						{
 						case "string":
-							row.add(rowJson.get(j).toString());
+							row.add(dataStr);
 							break;
 							
 						case "boolean":
@@ -166,6 +167,7 @@ public class DImport implements Driver{
 		} else // If we are reading in xml...
 		{
 			table = unmarshall(matcher.group("fileName")).buildTable();
+			table.getSchema().put("table_name", matcher.group("tabName"));
 			db.put(matcher.group("tabName"), table);
 		}
 		return new Response(true, "File Imported Successfully!", table);

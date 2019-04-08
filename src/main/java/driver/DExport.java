@@ -189,6 +189,7 @@ public class DExport implements Driver{
 			
 			while(output.exists())
 			{
+				path = output.getAbsolutePath();
 				i++;
 				output = new File(path.substring(0,path.length()-7) + "_" + i + ".json");
 			}
@@ -201,6 +202,7 @@ public class DExport implements Driver{
 			int i = 1;
 			 while(output.exists())
 			 {
+				 path = output.getAbsolutePath();
 				 i++;
 				 output = new File(path.substring(0,path.length() - 6) + "_" + i + ".xml");
 			 }

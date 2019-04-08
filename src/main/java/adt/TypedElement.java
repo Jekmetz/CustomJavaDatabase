@@ -30,7 +30,7 @@ public class TypedElement {
 	public void setType(String type) { this.type = type; }
 	
 	@XmlElement
-	public String getData() { return data.toString(); }
+	public String getData() { return (data != null) ? data.toString() : null; }
 	
 	public void setData(String data) {
 		if (type.equals("string"))
