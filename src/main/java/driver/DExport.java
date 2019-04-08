@@ -91,8 +91,6 @@ public class DExport implements Driver{
 					for(int i = 0; i < colTypes.size(); i++)	//For the length of the coltypes and rows...
 					{
 						String type = colTypes.get(i);
-						
-						System.out.println(row.get(i));
 						if(row.get(i) == null)
 						{
 							subRow.add(":;null;:");
@@ -137,7 +135,7 @@ public class DExport implements Driver{
 					String dir = System.getProperty("user.dir") + "\\json";
 					new File(dir).mkdir();
 					//Put the file in that directory!
-					File file = validateFile(new File(dir + "\\" + (matcher.group("fileName")!=null ? matcher.group("fileName") : matcher.group("tabName")) + ".json"),"json");
+					File file = new File(dir + "\\" + (matcher.group("fileName")!=null ? matcher.group("fileName") : matcher.group("tabName")) + ".json");
 					//Write into that file!
 					FileWriter fw = new FileWriter(file);
 					fw.write(jsonObj.toString());
@@ -168,53 +166,11 @@ public class DExport implements Driver{
 		    
 		    new File(System.getProperty("user.dir") + "\\xml").mkdir();
 		    
-		    marshaller.marshal(object, validateFile(new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"),"xml"));
+		    marshaller.marshal(object, new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
 		} 
 		catch (JAXBException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	//Helper... validate file names
-	private File validateFile(File file,String fileType)
-	{
-		File output = file;
-		
-		if (fileType.equals("json"))	//If we are working on a json file
-		{
-			String path = output.getAbsolutePath();
-			if(output.exists()) output = new File(path.substring(0, path.length() - 5) + "_1.json");
-			
-			int i = 1;
-			
-			while(output.exists())
-			{
-				path = output.getAbsolutePath();
-				i++;
-				output = new File(path.substring(0,path.length()-7) + "_" + i + ".json");
-			}
-			
-		} else //If we are working on an xml file
-		{
-			String path = output.getAbsolutePath();
-			if(output.exists()) output = new File(path.substring(0, path.length() - 4) + "_1.xml");
-			
-			int i = 1;
-			 while(output.exists())
-			 {
-				 path = output.getAbsolutePath();
-				 i++;
-				 output = new File(path.substring(0,path.length() - 6) + "_" + i + ".xml");
-			 }
-		}
-		
-		try {
-			output.createNewFile();
-		} catch (IOException e) {
-			System.out.println("Could not create new file: '" + output.getName() + "'!");
-		}
-		
-		return output;		
 	}
 
 }

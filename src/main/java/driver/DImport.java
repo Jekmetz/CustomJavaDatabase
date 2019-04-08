@@ -41,7 +41,7 @@ public class DImport implements Driver{
 		
 		Table table = null;
 		
-		if(db.containsKey(matcher.group("tabName"))) return new Response(false, "The table '" + matcher.group("tabName") + "' already exists in the database!",null);
+		String tabName = validateName(matcher.group("tabName"),db);
 		
 		if(matcher.group("fileType").toLowerCase().equals("json"))	//If we are reading in json...
 		{
@@ -100,7 +100,7 @@ public class DImport implements Driver{
 			
 			//Set up the schema
 			table.getSchema().put("primary_index", primary_index);
-			table.getSchema().put("table_name", matcher.group("tabName"));
+			table.getSchema().put("table_name", tabName);
 			table.getSchema().put("column_names", colNames);
 			table.getSchema().put("column_types", colTypes);
 			
@@ -159,25 +159,43 @@ public class DImport implements Driver{
 				table.put(primaryObject, row);
 			}
 			
-			if(!db.containsKey(matcher.group("tabName"))) //If the table name doesn't already exist in the database...
-				db.put(matcher.group("tabName"), table);
-			else
-				return new Response(false,"Database already contains a table named: '" + matcher.group("tabName") + "'",null);
+			db.put(tabName, table);
 			
 		} else // If we are reading in xml...
 		{
-			table = unmarshall(matcher.group("fileName")).buildTable();
-			table.getSchema().put("table_name", matcher.group("tabName"));
-			db.put(matcher.group("tabName"), table);
+			try {
+				table = unmarshall(matcher.group("fileName")).buildTable();
+			} catch (FileNotFoundException e) {	//IF the file is not found...
+				return new Response(false,"File Not Found: '" + matcher.group("fileName") + ".xml'!",null);
+			}
+			table.getSchema().put("table_name", tabName);
+			db.put(tabName, table);
 		}
 		return new Response(true, "File Imported Successfully!", table);
 	}
 	
-	public XmlFriendlyTable unmarshall(String filename) {
+	private String validateName(String tabName, Database db) {
+		String output = tabName;
+		
+		if(db.containsKey(tabName)) output = tabName + "_1";
+		
+		int i = 1;
+		while(db.containsKey(output))
+		{
+			i++;
+			output = tabName.substring(0, tabName.length()-2) + "_" + i;
+		}
+		
+		return output;
+	}
+
+	public XmlFriendlyTable unmarshall(String filename) throws FileNotFoundException{
 		XmlFriendlyTable result = null;
 		try {
+			File file = new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml");
+			if(!file.exists()) throw new FileNotFoundException();
 			Unmarshaller unmarshaller = JAXBContext.newInstance(XmlFriendlyTable.class).createUnmarshaller();
-			result = (XmlFriendlyTable) unmarshaller.unmarshal(new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
+			result = (XmlFriendlyTable) unmarshaller.unmarshal(file);
 		} 
 		catch (JAXBException e) {
 			e.printStackTrace();
