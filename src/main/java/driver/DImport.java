@@ -131,22 +131,28 @@ public class DImport implements Driver{
 				
 				for(int j = 0; j < rowJson.size(); j++)
 				{
-					switch(colTypes.get(j))
+					System.out.println(rowJson.get(j) + ": " + rowJson.get(j).toString().equals(":;null;:"));
+					if(rowJson.get(j).toString().equals(":;null;:"))
+						row.add(null);
+					else	//If rowJson is supposed to be null
 					{
-					case "string":
-						row.add(rowJson.get(j));
-						break;
-						
-					case "boolean":
-						row.add(rowJson.getBoolean(j));
-						break;
-						
-					case "integer":
-						row.add(rowJson.getInt(j));
-						break;
-						
-					default:
-						return new Response(false,"Corrupted data in table!",null);
+						switch(colTypes.get(j))
+						{
+						case "string":
+							row.add(rowJson.get(j).toString());
+							break;
+							
+						case "boolean":
+							row.add(rowJson.getBoolean(j));
+							break;
+							
+						case "integer":
+							row.add(rowJson.getInt(j));
+							break;
+							
+						default:
+							return new Response(false,"Corrupted data in table!",null);
+						}
 					}
 				}
 				table.put(primaryObject, row);
