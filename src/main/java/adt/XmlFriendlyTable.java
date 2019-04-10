@@ -1,6 +1,4 @@
 package adt;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +39,8 @@ public class XmlFriendlyTable {
 			for(Object obj : row)
 				wl.list.add(obj);
 			
-			data.list.add(wl);		}
+			data.list.add(wl);		
+		}
 	}
 	
 	@XmlElement(name="primary_index")
@@ -70,9 +69,17 @@ public class XmlFriendlyTable {
 		schema.put("column_types", column_types);
 		
 		//Build data
-		List<Object> list = data.list;
-		
-		//TODO: ACTUALLY BUILD THE DATA
+		for(int i = 0; i < data.list.size(); i++)
+		{
+			WrappedList wl = (WrappedList)data.list.get(i);
+			Row row = new Row();
+			Object primObj = convObjType(column_types.get(primary_index),wl.get(primary_index));
+			
+			for(int j = 0; j < wl.list.size(); j++)
+				row.add(convObjType(column_types.get(j),wl.list.get(j)));
+			
+			table.put(primObj, row);
+		}
 		
 		table.setSchema(schema);
 		return table;
