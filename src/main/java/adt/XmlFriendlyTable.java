@@ -43,9 +43,7 @@ public class XmlFriendlyTable {
 			WrappedList wl = new WrappedList();
 			
 			for(Object obj : table.get(key))
-			{
 				row.add(new TypedElement(obj));
-			}
 			
 			wl.list = row;
 			data.put(new TypedElement(key), wl);
