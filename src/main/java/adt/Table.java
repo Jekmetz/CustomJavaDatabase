@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.*;
  */
 @XmlRootElement
 public class Table extends HashMap<Object, Row> implements Cloneable{
+	@XmlAttribute(name="version")
 	private static final long serialVersionUID = 1L;
 	
 	/** Do not modify. **/
