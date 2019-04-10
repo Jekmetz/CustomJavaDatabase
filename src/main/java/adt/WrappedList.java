@@ -11,5 +11,5 @@ public class WrappedList extends ArrayList<String> {
 	
 	private static final long serialVersionUID = 1L;
 	@XmlElement(name="element")
-	public List<TypedElement> list = null;
+	public List<Object> list = null;
 }

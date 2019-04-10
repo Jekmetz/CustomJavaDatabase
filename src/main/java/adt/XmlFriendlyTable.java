@@ -14,7 +14,7 @@ public class XmlFriendlyTable {
 	Integer primary_index = 0;
 	List<String> column_names = null;
 	List<String> column_types = null;
-	java.util.HashMap<TypedElement,WrappedList> data = null;
+	java.util.HashMap<Object,WrappedList> data = null;
 	
 	public XmlFriendlyTable()
 	{
@@ -29,20 +29,20 @@ public class XmlFriendlyTable {
 		this.primary_index = table.getSchema().getInteger("primary_index");
 		this.column_names = table.getSchema().getStringList("column_names");
 		this.column_types = table.getSchema().getStringList("column_types");
-		data = new HashMap<TypedElement,WrappedList>();
+		data = new HashMap<Object,WrappedList>();
 		Set<Object> dataKeySet = table.keySet();
 		
 		//Build data
 		for(Object key : dataKeySet)
 		{
-			ArrayList<TypedElement> row = new ArrayList<TypedElement>();
+			ArrayList<Object> row = new ArrayList<Object>();
 			WrappedList wl = new WrappedList();
 			
 			for(Object obj : table.get(key))
 				row.add(new TypedElement(obj));
 			
 			wl.list = row;
-			data.put(new TypedElement(key), wl);
+			data.put(key, wl);
 		}
 	}
 	
@@ -55,12 +55,12 @@ public class XmlFriendlyTable {
 	@XmlElement(name="column_type")
 	public List<String> getColumn_types() { return column_types; }
 	@XmlElement(name="data")
-	public java.util.HashMap<TypedElement,WrappedList> getData() { return data; }
+	public java.util.HashMap<Object,WrappedList> getData() { return data; }
 	
 	public void setPrimary_index(Integer primary_index) { this.primary_index = primary_index; }
 	public void setColumn_names(List<String> column_names) { this.column_names = column_names; }
 	public void setColumn_types(List<String> column_types) { this.column_types = column_types; }
-	public void setData(java.util.HashMap<TypedElement,WrappedList> data) { this.data = data; }
+	public void setData(java.util.HashMap<Object,WrappedList> data) { this.data = data; }
 	
 	public Table buildTable()
 	{
