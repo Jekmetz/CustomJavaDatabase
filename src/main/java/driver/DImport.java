@@ -85,7 +85,7 @@ public class DImport implements Driver{
 			}
 			
 			schema = jsonObject.getJsonObject("schema");
-			data = jsonObject.getJsonObject("data").getJsonArray("data");
+			data = jsonObject.getJsonArray("data");
 			
 			JsonArray colNamesJson = schema.getJsonArray("column_names");
 			JsonArray colTypesJson = schema.getJsonArray("column_types");

@@ -126,9 +126,8 @@ public class DExport implements Driver{
 						.add("primary_index", primaryIndex)
 						.add("column_names", colNamesArrayBuilder)
 						.add("column_types", colTypesArrayBuilder))
-				.add("data", Json.createObjectBuilder()
-						.add("data", dataArrayBuilder)
-				).build();
+				.add("data", dataArrayBuilder)
+				.build();
 				
 				try {
 					//Make sure that the json directory exists!
