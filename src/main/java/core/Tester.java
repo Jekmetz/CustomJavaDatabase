@@ -45,6 +45,7 @@ public class Tester {
 		XmlFriendlyTable test = unmarshall("testFile");
 		
 		System.out.println(Console.formatResponse(test.buildTable()));
+
 	}
 
 	public static void marshall(XmlFriendlyTable object,String filename) {
