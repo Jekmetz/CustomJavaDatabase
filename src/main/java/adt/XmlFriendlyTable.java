@@ -14,7 +14,7 @@ public class XmlFriendlyTable {
 	Integer primary_index = 0;
 	List<String> column_names = null;
 	List<String> column_types = null;
-	java.util.HashMap<Object,WrappedList> data = null;
+	WrappedList data = null;
 	
 	public XmlFriendlyTable()
 	{
@@ -29,21 +29,19 @@ public class XmlFriendlyTable {
 		this.primary_index = table.getSchema().getInteger("primary_index");
 		this.column_names = table.getSchema().getStringList("column_names");
 		this.column_types = table.getSchema().getStringList("column_types");
-		data = new HashMap<Object,WrappedList>();
+		data = new WrappedList();
 		Set<Object> dataKeySet = table.keySet();
 		
 		//Build data
 		for(Object key : dataKeySet)
 		{
-			ArrayList<Object> row = new ArrayList<Object>();
+			Row row = table.get(key);
 			WrappedList wl = new WrappedList();
+
+			for(Object obj : row)
+				wl.list.add(obj);
 			
-			for(Object obj : table.get(key))
-				row.add(new TypedElement(obj));
-			
-			wl.list = row;
-			data.put(key, wl);
-		}
+			data.list.add(wl);		}
 	}
 	
 	@XmlElement(name="primary_index")
@@ -55,12 +53,12 @@ public class XmlFriendlyTable {
 	@XmlElement(name="column_type")
 	public List<String> getColumn_types() { return column_types; }
 	@XmlElement(name="data")
-	public java.util.HashMap<Object,WrappedList> getData() { return data; }
+	public WrappedList getData() { return data; }
 	
 	public void setPrimary_index(Integer primary_index) { this.primary_index = primary_index; }
 	public void setColumn_names(List<String> column_names) { this.column_names = column_names; }
 	public void setColumn_types(List<String> column_types) { this.column_types = column_types; }
-	public void setData(java.util.HashMap<Object,WrappedList> data) { this.data = data; }
+	public void setData(WrappedList data) { this.data = data; }
 	
 	public Table buildTable()
 	{
@@ -71,20 +69,28 @@ public class XmlFriendlyTable {
 		schema.put("primary_index", primary_index);
 		schema.put("column_types", column_types);
 		
-		Set<TypedElement> dataKeySet = data.keySet();
+		//Build data
+		List<Object> list = data.list;
 		
-		for(TypedElement te : dataKeySet) 
-		{
-			WrappedList wl = data.get(te);
-			Row row = new Row();
-			
-			for(TypedElement obj : wl.list)
-				row.add(obj.getDataObject());
-			
-			table.put(te.getDataObject(), row);
-		}
+		//TODO: ACTUALLY BUILD THE DATA
 		
 		table.setSchema(schema);
 		return table;
+	}
+	
+	//Helpers
+	private Object convObjType(String objType, Object obj)
+	{
+		Object output = null;
+		String objString = (obj != null) ? obj.toString() : "null";
+		if (objType.equals("string"))
+			output = obj;
+		else if (objType.equals("integer"))
+			output = Integer.parseInt(objString);
+		else if (objType.equals("boolean"))
+			output = Boolean.parseBoolean(objString);
+		else
+			this.data = null;
+		return output;
 	}
 }

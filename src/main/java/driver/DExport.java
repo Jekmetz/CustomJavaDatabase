@@ -58,10 +58,8 @@ public class DExport implements Driver{
 				 * 				"column_names"	: ["s","pi","b"],
 				 * 				"column_types"  : ["string","integer","boolean"]
 				 * 			},
-				 * 		"data" :
-				 * 			{
-				 * 				"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
-				 * 			}
+				 * 
+				 * 		"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
 				 * 	}
 				 */
 				
