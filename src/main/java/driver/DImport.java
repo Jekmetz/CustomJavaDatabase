@@ -101,6 +101,9 @@ public class DImport implements Driver{
 			table.getSchema().put("column_names", colNames);
 			table.getSchema().put("column_types", colTypes);
 			
+			//Get the data in there!
+			String primaryType = colTypes.get(primary_index);
+			
 			for(int i = 0; i < data.size(); i++)
 			{
 				JsonArray rowJson = data.getJsonArray(i);
@@ -108,7 +111,7 @@ public class DImport implements Driver{
 				Object primaryObject = null;
 				
 				/**Primary Object**/
-				switch(colTypes.get(primary_index))
+				switch(primaryType)
 				{
 				case "string":
 					primaryObject = rowJson.get(primary_index);
