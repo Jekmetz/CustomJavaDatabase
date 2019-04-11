@@ -59,8 +59,8 @@ public class DExport implements Driver{
 				 * 				"column_types"  : ["string","integer","boolean"]
 				 * 			},
 				 * 
-				 * 			"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
-				 * 	}
+				 * 		"colData"      : [["a",1,true],["b",2,false],["c",3,true],["d",4,false]]
+				 * 		* 	}
 				 */
 				
 				//Overarching structures

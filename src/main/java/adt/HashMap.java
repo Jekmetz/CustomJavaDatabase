@@ -19,7 +19,7 @@ import java.util.Set;
  * However, you can continue to use this non-compliant
  * class for all non-Hash modules.
  */
-public class HashMap<K,V> implements Map<K,V> {
+public class HashMap<K,V> implements Map<K,V>{
 	//Initialize Vars
 	//private static final long serialVersionUID = 1L;
 	private final int INITIAL_SIZE = 11;	//Initial size of Map

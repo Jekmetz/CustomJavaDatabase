@@ -9,7 +9,7 @@ import adt.HashMap;
  * Additional features may be implemented.
  */
 public class Database extends HashMap<String, Table> {
-	private static final long serialVersionUID = 1L;
+//	private static final long serialVersionUID = 1L;
 
 	/** Do not modify. **/
 	public Database() {

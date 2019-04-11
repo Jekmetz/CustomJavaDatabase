@@ -1,6 +1,5 @@
 package adt;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +13,7 @@ public class XmlFriendlyTable {
 	Integer primary_index = 0;
 	List<String> column_names = null;
 	List<String> column_types = null;
-	java.util.HashMap<TypedElement,WrappedList> data = null;
+	List<WrappedList> data = null;
 	
 	public XmlFriendlyTable()
 	{
@@ -29,20 +28,22 @@ public class XmlFriendlyTable {
 		this.primary_index = table.getSchema().getInteger("primary_index");
 		this.column_names = table.getSchema().getStringList("column_names");
 		this.column_types = table.getSchema().getStringList("column_types");
-		data = new HashMap<TypedElement,WrappedList>();
+		data = new ArrayList<WrappedList>();
 		Set<Object> dataKeySet = table.keySet();
 		
 		//Build data
 		for(Object key : dataKeySet)
 		{
-			ArrayList<TypedElement> row = new ArrayList<TypedElement>();
+			Row row = table.get(key);
 			WrappedList wl = new WrappedList();
+			wl.list = new ArrayList<String>();
+
+			for(Object obj : row)
+			{
+				wl.list.add((obj != null) ? obj.toString() : ";:null:;");
+			}
 			
-			for(Object obj : table.get(key))
-				row.add(new TypedElement(obj));
-			
-			wl.list = row;
-			data.put(new TypedElement(key), wl);
+			data.add(wl);
 		}
 	}
 	
@@ -54,13 +55,14 @@ public class XmlFriendlyTable {
 	@XmlElementWrapper(name="column_types")
 	@XmlElement(name="column_type")
 	public List<String> getColumn_types() { return column_types; }
+	@XmlElementWrapper(name="lists")
 	@XmlElement(name="data")
-	public java.util.HashMap<TypedElement,WrappedList> getData() { return data; }
+	public List<WrappedList> getData() { return data; }
 	
 	public void setPrimary_index(Integer primary_index) { this.primary_index = primary_index; }
 	public void setColumn_names(List<String> column_names) { this.column_names = column_names; }
 	public void setColumn_types(List<String> column_types) { this.column_types = column_types; }
-	public void setData(java.util.HashMap<TypedElement,WrappedList> data) { this.data = data; }
+	public void setData(List<WrappedList> data) { this.data = data; }
 	
 	public Table buildTable()
 	{
@@ -70,21 +72,39 @@ public class XmlFriendlyTable {
 		schema.put("column_names", column_names);
 		schema.put("primary_index", primary_index);
 		schema.put("column_types", column_types);
-		
-		Set<TypedElement> dataKeySet = data.keySet();
-		
-		for(TypedElement te : dataKeySet) 
+
+		//Build data
+		for(int i = 0; i < data.size(); i++)
 		{
-			WrappedList wl = data.get(te);
+			WrappedList wl = data.get(i);
 			Row row = new Row();
+			Object primObj = convObjType(column_types.get(primary_index),wl.list.get(primary_index));
 			
-			for(TypedElement obj : wl.list)
-				row.add(obj.getDataObject());
+			for(int j = 0; j < wl.list.size(); j++)
+				row.add(convObjType(column_types.get(j),wl.list.get(j)));
 			
-			table.put(te.getDataObject(), row);
+			table.put(primObj, row);
 		}
 		
 		table.setSchema(schema);
 		return table;
+	}
+	
+	//Helpers
+	private Object convObjType(String objType, String objString)
+	{
+		Object output = null;
+		
+		if(objString.equals(";:null:;")) return null;
+		
+		if (objType.equals("string"))
+			output = objString;
+		else if (objType.equals("integer"))
+			output = Integer.parseInt(objString);
+		else if (objType.equals("boolean"))
+			output = Boolean.parseBoolean(objString);
+		else
+			this.data = null;
+		return output;
 	}
 }
