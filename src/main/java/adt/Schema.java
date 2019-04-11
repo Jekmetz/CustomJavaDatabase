@@ -1,7 +1,8 @@
 package adt;
 
-import adt.HashMap;
 import java.util.List;
+
+import javax.xml.bind.annotation.*;
 
 /** 
  * This class is a hash map alias providing
@@ -9,7 +10,9 @@ import java.util.List;
  * 
  * Additional features may be implemented.
  */
+@XmlRootElement
 public class Schema extends HashMap<String, Object> implements Cloneable{
+	@XmlAttribute(name="version")
 	private static final long serialVersionUID = 1L;
 
 	/** Do not modify. **/
@@ -36,6 +39,13 @@ public class Schema extends HashMap<String, Object> implements Cloneable{
     /** Do not modify. **/
     public Integer getInteger(String key) {
     	return (Integer) get(key);
+    }
+    
+    @XmlElementWrapper(name="entries")
+    @XmlElement(name="entry")
+    public Schema getEntries()
+    {
+    	return this;
     }
     
     //Slightly redundant since there is a copy constructor but .clone might be easier to read in the code

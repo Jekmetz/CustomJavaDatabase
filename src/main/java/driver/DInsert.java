@@ -268,7 +268,7 @@ public class DInsert implements Driver {
 						}
 
 						success = false;
-						table = null;
+						computedTable = null;
 					}
 
 				} else // If the values length and the colNames length are not equal
