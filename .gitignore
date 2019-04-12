@@ -13,3 +13,4 @@
 Tester.*
 /lib/
 *.ps1
+/serialize/
