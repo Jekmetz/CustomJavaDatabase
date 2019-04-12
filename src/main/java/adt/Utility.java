@@ -11,4 +11,9 @@ public class Utility {
 		file.mkdir();
 		return file;
 	}
+	
+	public static File getRootDirectory(String dirName)
+	{
+		return new File(System.getProperty("user.dir") + "\\" + dirName);
+	}
 }
