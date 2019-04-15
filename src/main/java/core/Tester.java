@@ -1,6 +1,12 @@
 package core;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import javax.xml.bind.JAXBContext;
@@ -9,7 +15,9 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import adt.Row;
+import adt.Schema;
 import adt.Table;
+import adt.Utility;
 import adt.XmlFriendlyTable;
 
 public class Tester {
@@ -29,7 +37,13 @@ public class Tester {
 		types.add("string");
 		table.getSchema().put("column_types", types);
 		
-		
+//		serialize(table.getSchema());
+//		
+//		Schema newSchem = deserialize();
+//		
+//		System.out.println("SCHEM: " + table.getSchema() + "\nNEWSCHEM: " + newSchem);
+//		
+//		
 		for(int i = 1; i < 3; i++)
 		{
 			Row row = new Row();
@@ -38,14 +52,67 @@ public class Tester {
 			table.put(i, row);
 		}
 		
-		XmlFriendlyTable xmlfo = new XmlFriendlyTable(table);
+//		serialize(table.get(1));
+//		
+//		Row newRow = deserialize();
+//		
+//		System.out.println("ROW: " + table.get(1) + "\nNEWROW: " + newRow);
 		
-		marshall(xmlfo,"testFile");
+		serialize(table);
 		
-		XmlFriendlyTable test = unmarshall("testFile");
-		
-		System.out.println(Console.formatResponse(test.buildTable()));
+		Table newTab = deserialize();
+				
+		System.out.println("Table: \n" + Console.formatResponse(table) + "\nnewTab: \n" + Console.formatResponse(newTab));
+//		
+//		XmlFriendlyTable xmlfo = new XmlFriendlyTable(table);
+//		
+//		marshall(xmlfo,"testFile");
+//		
+//		XmlFriendlyTable test = unmarshall("testFile");
+//		
+//		System.out.println(Console.formatResponse(test.buildTable()));
 
+	}
+	
+	public static void serialize(Table table)
+	{
+		FileOutputStream file = null;
+		ObjectOutputStream oos = null;
+		
+		try {
+			file = new FileOutputStream(new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "\\testTable.ser"));
+			oos = new ObjectOutputStream(file);
+			
+			oos.writeObject(table);
+			
+			oos.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static Table deserialize()
+	{
+		FileInputStream file = null;
+		ObjectInputStream ois = null;
+		Table output = null;
+		
+		try {
+			file = new FileInputStream(new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "\\testTable.ser"));
+			ois = new ObjectInputStream(file);
+			
+			output = (Table) ois.readObject();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return output;
 	}
 
 	public static void marshall(XmlFriendlyTable object,String filename) {
