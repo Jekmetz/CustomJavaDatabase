@@ -9,16 +9,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import adt.Row;
-import adt.Schema;
 import adt.Table;
 import adt.Utility;
-import adt.XmlFriendlyTable;
 
 public class Tester {
 	
@@ -115,43 +108,4 @@ public class Tester {
 		return output;
 	}
 
-	public static void marshall(XmlFriendlyTable object,String filename) {
-		try {
-			Marshaller marshaller = JAXBContext.newInstance(XmlFriendlyTable.class).createMarshaller();
-		    marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-		    
-		    new File(System.getProperty("user.dir") + "\\xml").mkdir();
-		    
-		    marshaller.marshal(object, new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
-		} 
-		catch (JAXBException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static XmlFriendlyTable unmarshall(String filename) {
-		XmlFriendlyTable result = null;
-		try {
-			Unmarshaller unmarshaller = JAXBContext.newInstance(XmlFriendlyTable.class).createUnmarshaller();
-			result = (XmlFriendlyTable) unmarshaller.unmarshal(new File(System.getProperty("user.dir") + "\\xml\\" + filename + ".xml"));
-		} 
-		catch (JAXBException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-	
-	public static ArrayList<Object> concat(ArrayList<Object> temp1, ArrayList<Object> temp2)
-	{
-		ArrayList<Object> output = new ArrayList<Object>();
-		
-		for(int i = 0; i < temp1.size(); i++) {
-			output.add(temp1.get(i));
-		}
-		for(int i = 0; i < temp2.size(); i++) {
-			output.add(temp2.get(i));
-		}
-		
-		return output;
-	}
 }
