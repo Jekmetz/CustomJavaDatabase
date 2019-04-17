@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -139,11 +140,6 @@ public class Server implements Closeable{
 			File dir = Utility.getRootDirectory("serialize");
 			dir.mkdir();
 			
-			//Clear directory to get rid of dumped tables
-			File[] files = dir.listFiles(f -> f.getName().matches("[a-zA-Z][a-zA-Z0-9_]*.ser"));
-			for(File f : files)
-				f.delete();
-			
 			for(String tabName : tabNames)
 			{
 				file = new FileOutputStream(new File(dir.getAbsolutePath() + "\\" + tabName + ".ser"));
@@ -170,6 +166,40 @@ public class Server implements Closeable{
 	private void deserialize(Database database)
 	{
 		File dir = Utility.getRootDirectory("serialize");
+		
+		/*****************DELETE Dropped TABLES*************/
+		ArrayList<String> droppedTableNames = new ArrayList<>();
+		File droppedTables = new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "/droppedTables.txt");
+		
+		if(droppedTables.exists()) 	//If we even have a dropped tables file...
+		{
+			try {
+				/*get a list of the dropped tables*/
+				FileReader fr = new FileReader(droppedTables);
+				BufferedReader br = new BufferedReader(fr);
+				String line = null;
+				
+				while((line = br.readLine()) != null)
+					if (!line.equals(""))
+						droppedTableNames.add(line);
+				
+				br.close();
+				fr.close();
+				
+				/*Delete all of those files before startup*/
+				for(String str : droppedTableNames)
+				{
+					File del = new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "/" + str + ".ser");
+					del.delete();
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+			
+		droppedTables.delete();
+		/**************/
 		
 		/*********AFTER CRASH***********/
 		File logFile = new File(dir.getAbsolutePath() + "\\logFile.txt");
@@ -204,6 +234,9 @@ public class Server implements Closeable{
 				
 				Table table = (Table) ois.readObject();
 				database.put(table.getSchema().getString("table_name"), table);
+				
+				ois.close();
+				file.close();
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
