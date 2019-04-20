@@ -21,6 +21,8 @@ public class Response extends HashMap<String, Object> {
     	super(response);
     }
     
+    public boolean getBoolean(String key) { return (Boolean) this.get(key);}
+    
     /** Do not modify. **/
     public Response(boolean success, String message, Table table) {
     	this.put("success", success);

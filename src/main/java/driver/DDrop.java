@@ -1,11 +1,16 @@
 package driver;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import adt.Database;
 import adt.Response;
 import adt.Table;
+import adt.Utility;
 
 public class DDrop implements Driver {
 	//Initialize Variables
@@ -36,6 +41,22 @@ public class DDrop implements Driver {
 			table = db.get(matcher.group("tabName"));
 			//In creating the message, we remove the table
 			message = "Table Name: " + matcher.group("tabName") + "; Number of rows: " + db.remove(matcher.group("tabName")).size();
+			
+			/***********DROP FILE***********/
+			try {
+				File deleteLog = new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "/droppedTables.txt");
+				deleteLog.createNewFile();
+				
+				FileWriter fw = new FileWriter(deleteLog,true);
+				fw.write(table.getSchema().getString("table_name") + "\n");
+				fw.close();
+			} catch (FileNotFoundException e)
+			{
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			/****************/
 		} else 
 		{
 			success = false;

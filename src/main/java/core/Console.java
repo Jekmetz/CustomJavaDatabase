@@ -1,5 +1,6 @@
 package core;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -44,8 +45,14 @@ public class Console {
 			command = in.nextLine();	//read command
 
 			if(command.toLowerCase().equals("exit"))		//if they want to exit...
+			{
 				stay = false;				//kill it
-			else
+				try {
+					server.close();
+				} catch (IOException e) {
+					System.out.println("Server Closed Incorrectly");
+				}
+			}else
 			{
 				responses = server.interpret(command);	//Otherwise, interpret command
 			
@@ -156,9 +163,7 @@ public class Console {
 			output += str;
 		
 		if(addElipses)
-		{
 			output = str.substring(0,trunc[0] - 3) + "...";
-		}
 		
 		return output;
 	}
