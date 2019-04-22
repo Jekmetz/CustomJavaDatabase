@@ -19,6 +19,8 @@ public class DAlterDrop implements Driver {
 				);
 	}
 	
+	public boolean isMutation() { return true; }
+	
 	@Override
 	public Response execute(Database db, String query) {
 		Matcher matcher = pattern.matcher(query.trim());

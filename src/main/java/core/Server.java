@@ -106,17 +106,20 @@ public class Server implements Closeable{
 						found = true; 				// ITS BEEN FOUND... HUZZAH!
 						
 						/**********CREATING PERSISTENT LOG FILE**************/
-						try {
-							File f = new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "\\logFile.txt");
-							f.createNewFile();
-							FileWriter file = new FileWriter(f,true);
-							file.write(query + ";");
-							file.close();
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						}
-						catch (IOException e) {
-							e.printStackTrace();
+						if(driver.isMutation())
+						{
+							try {
+								File f = new File(Utility.getRootDirectory("serialize").getAbsolutePath() + "\\logFile.txt");
+								f.createNewFile();
+								FileWriter file = new FileWriter(f,true);
+								file.write(query + ";");
+								file.close();
+							} catch (FileNotFoundException e) {
+								e.printStackTrace();
+							}
+							catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
 						/**************************/ 
 					}
@@ -133,23 +136,12 @@ public class Server implements Closeable{
 	public void close() throws IOException {
 		Set<String> tabNames = database.keySet();
 		
-		FileOutputStream file = null;
-		ObjectOutputStream oos = null;
-		
 		try {
 			File dir = Utility.getRootDirectory("serialize");
 			dir.mkdir();
 			
 			for(String tabName : tabNames)
-			{
-				file = new FileOutputStream(new File(dir.getAbsolutePath() + "\\" + tabName + ".ser"));
-				oos = new ObjectOutputStream(file);
-				
-				oos.writeObject(database.get(tabName));
-				
-				oos.close();
-				file.close();
-			}
+				serializeTable(tabName,dir);
 			
 			//Delete log file
 			File logFile = new File(dir.getAbsolutePath() + "\\logFile.txt");
@@ -161,6 +153,17 @@ public class Server implements Closeable{
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	private void serializeTable(String tabName, File dir) throws FileNotFoundException,IOException
+	{
+		FileOutputStream file = new FileOutputStream(new File(dir.getAbsolutePath() + "\\" + tabName + ".ser"));
+		ObjectOutputStream oos = new ObjectOutputStream(file);
+		
+		oos.writeObject(database.get(tabName));
+		
+		oos.close();
+		file.close();
 	}
 	
 	private void deserialize(Database database)
@@ -207,10 +210,27 @@ public class Server implements Closeable{
 			FileReader fr = new FileReader(logFile);
 			BufferedReader br = new BufferedReader(fr);
 			String line = br.readLine();
+			boolean badCrash = false;
 			if(line != null)
+			{
+				badCrash = true;
 				this.interpret(line);
+			}
 			br.close();
 			fr.close();
+			
+			if(badCrash)
+			{
+				Set<String> tabNames = database.keySet();
+				
+				try {					
+					for(String tabName : tabNames)
+						serializeTable(tabName,dir);
+				} catch(FileNotFoundException e)
+				{
+					System.out.println("File not found! Check serialization!");
+				}
+			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}

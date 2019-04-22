@@ -17,6 +17,8 @@ public class DDump implements Driver {
 				Pattern.CASE_INSENSITIVE
 		);
 	}
+	
+	public boolean isMutation() { return true; }
 
 	@Override public Response execute(Database db, String query)
 	{

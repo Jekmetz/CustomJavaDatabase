@@ -22,6 +22,8 @@ public class DDrop implements Driver {
 		);
 	}
 	
+	public boolean isMutation() { return true; }
+	
 	@Override
 	public Response execute(Database db, String query) {
 		//Initialize Return variables

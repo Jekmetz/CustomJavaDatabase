@@ -11,4 +11,5 @@ import adt.Response;
  */
 public interface Driver {
 	public Response execute(Database db, String query);
+	public default boolean isMutation() { return false; }
 }

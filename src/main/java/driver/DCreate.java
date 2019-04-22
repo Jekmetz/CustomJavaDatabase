@@ -22,6 +22,7 @@ public class DCreate implements Driver{
 		);
 	}
 	
+	public boolean isMutation() { return true; }
 	
 	@Override
 	public Response execute(Database db, String query)
