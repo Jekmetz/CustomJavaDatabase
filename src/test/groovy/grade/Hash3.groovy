@@ -86,13 +86,12 @@ public class Hash3 {
 				
 				assertTrue(
 					exemplar.equals(subject),
-					'equals(other) must return correct results'
+					'other_map.equals(your_map) must return correct results'
 				)
 				
-				assertEquals(
-					exemplar.hashCode(),
-					subject.hashCode(),
-					'hashCode() must return correct results'
+				assertTrue(
+					subject.equals(exemplar),
+					'your_map.equals(other_map) must return correct results'
 				)
 				
 				milestones++
