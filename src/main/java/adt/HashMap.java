@@ -456,12 +456,11 @@ public class HashMap<K,V> implements Map<K,V>{
 			if(index < data.length)	//If we have the ability to search
 			{
 				if(cur.next != null)	//If there is something left in the chain...
-				{
 					cur = cur.next;	
-				} else 					//If we need to move on to the next chain
+				else 					//If we need to move on to the next chain
 				{
 					boolean found = false;
-					while(!found)
+					while(!found) 	//loop as long as it is not found
 					{
 						index++;
 						if(((Node<MapEntry<K,V>>)data[index]).next != null)
@@ -473,9 +472,7 @@ public class HashMap<K,V> implements Map<K,V>{
 				}
 				output = cur.data;
 			} else 	//If we do not have the ability to search
-			{
 				output = null;
-			}
 			
 			itemsViewed++;	//Bump up the items viewed
 			return output;
