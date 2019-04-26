@@ -36,6 +36,7 @@ import driver.DSelect;
 import driver.DShow;
 import driver.DSquares;
 import driver.Driver;
+import driver.GDSquares;
 
 /**
  * This class implements a server with an active connection to a backing
@@ -64,7 +65,7 @@ public class Server implements Closeable{
 		drivers.add( new DCreate()           );
 		drivers.add( new DDrop()             );
 		drivers.add( new DShow()             );
-		drivers.add( new DSquares()          );
+		drivers.add( new GDSquares()          );
 		drivers.add( new DDump()             );
 		drivers.add( new DInsert()           );
 		drivers.add( new DGetTypes()         );
