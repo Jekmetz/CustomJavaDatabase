@@ -33,10 +33,13 @@ public class GDSquares implements Driver{
 		
 		if(!matcher.matches()) return null;	//If it didn't match the whole query, return null
 
-		upper = Integer.parseInt(matcher.group("upper"));	
-																//Get upper value
-		baseName = (matcher.group("baseName") != null) ?: "x"							//set basename (default to "x")
-		squareName = (matcher.group("squareName") != null) ?: baseName + "_squared"	//set squarename (default to "x_squared")
+		upper = Integer.parseInt(matcher.group("upper"));								//Get upper value	
+		
+		//THIS USAGE OF THE ELVIS OPERATOR DOES NOT WORK BECAUSE BASENAME WILL BE A BOOLEAN true IF MATCHER.GROUP('BASENAME') != NULL
+		baseName = (matcher.group("baseName") != null) ? matcher.group("baseName") : "x" 
+		squareName = (matcher.group("squareName") != null) ? matcher.group("squareName") : baseName + "_squared"
+		//baseName = (matcher.group("baseName") != null) ?: "x"							//set basename (default to "x")
+		//squareName = (matcher.group("squareName") != null) ?: baseName + "_squared"	//set squarename (default to "x_squared")
 
 		if(baseName.equals(squareName)) return null; 	//don't allow the square and basename to be the same
 		

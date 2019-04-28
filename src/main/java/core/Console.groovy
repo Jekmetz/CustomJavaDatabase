@@ -31,20 +31,20 @@ public class Console {
 	public static void prompt (Server server, InputStream in_stream, OutputStream out_stream) {
 		//Initialize Varibles
 			//Print Stream
-		final Scanner in = new Scanner(in_stream);
-		final PrintStream out = new PrintStream(out_stream);
+		def streamIn = new Scanner(in_stream);
+		def out = new PrintStream(out_stream);
 			//REP Loop Vars
-		boolean stay = true;
-		String command = null;
+		def stay = true;
+		def command = null;
 			//Functional
 		List<Response> responses = null;
 		
 		while(stay)
 		{
 			out.print(">> ");		//prompt for command
-			command = in.nextLine();	//read command
+			command = streamIn.nextLine();	//read command
 
-			if(command.toLowerCase().equals("exit"))		//if they want to exit...
+			if(command.toLowerCase()==("exit"))		//if they want to exit...
 			{
 				stay = false;				//kill it
 				try {
@@ -69,26 +69,26 @@ public class Console {
 			}	
 		}
 
-		in.close();
+		streamIn.close();
 	}
 	
 	public static String formatResponse(Table table)
 	{
-		String output = "";
+		def output = "";
 		if (table == null)
 		{
 			output = "No table!";
 		}else
 		{
 			//Init tableVars
-			ArrayList<String> colNames = new ArrayList<String>(table.getSchema().getStringList("column_names"));
-			List<String> colTypes = table.getSchema().getStringList("column_types");
-			Integer primaryInt = table.getSchema().getInteger("primary_index");
-			String tabName = table.getSchema().getString("table_name");
+			def colNames = new ArrayList<String>(table.getSchema().getStringList("column_names"));
+			def colTypes = table.getSchema().getStringList("column_types");
+			def primaryInt = table.getSchema().getInteger("primary_index");
+			def tabName = table.getSchema().getString("table_name");
 			//Init method vars
-			int numCols = colNames.size();
-			int colWidth = 15;
-			int tabWidth = numCols*colWidth + 1 + numCols;
+			def numCols = colNames.size();
+			def colWidth = 15;
+			def tabWidth = numCols*colWidth + 1 + numCols;
 			
 			if(tabName == null)	//If there is not a given table name...
 			{
@@ -125,13 +125,13 @@ public class Console {
 						if(row.get(i) == null) //If the object is null...
 						{
 							output += repeatStr(" ",colWidth);
-						} else if(colTypes.get(i).equals("integer"))
+						} else if(colTypes.get(i)==("integer"))
 						{
 							output += String.format("%" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
-						} else if(colTypes.get(i).equals("boolean"))
+						} else if(colTypes.get(i)==("boolean"))
 						{
 							output += String.format("%-" + colWidth + "s",repeatStr(row.get(i).toString(), 1, colWidth));
-						} else if(colTypes.get(i).equals("string"))
+						} else if(colTypes.get(i)==("string"))
 						{
 							output += String.format("%-" + colWidth + "s","\"" + repeatStr(row.get(i).toString(), 1, colWidth - 2) + "\"");
 						}
@@ -153,8 +153,8 @@ public class Console {
 	
 	private static String repeatStr(String str, int rep, int... trunc)
 	{
-		String output = "";
-		boolean addElipses = false;
+		def output = "";
+		def addElipses = false;
 		
 		if( (trunc.length >= 1) && (trunc[0] < str.length()*rep) )
 			addElipses = true;

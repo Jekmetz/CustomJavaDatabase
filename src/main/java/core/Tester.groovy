@@ -17,7 +17,10 @@ public class Tester {
 	
 	public static void main(String[] args)
 	{
-		Table table = new Table();
+		def a = 5
+		def b = 5
+		println ((b == a) ?: b)
+		/*Table table = new Table();
 		
 		table.getSchema().put("table_name", "tabName");
 		table.getSchema().put("primary_index", 0);
@@ -56,7 +59,7 @@ public class Tester {
 		Table newTab = deserialize();
 				
 		System.out.println("Table: \n" + Console.formatResponse(table) + "\nnewTab: \n" + Console.formatResponse(newTab));
-//		
+//		*/
 //		XmlFriendlyTable xmlfo = new XmlFriendlyTable(table);
 //		
 //		marshall(xmlfo,"testFile");
